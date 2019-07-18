@@ -46,6 +46,11 @@
         </span>
       </el-form-item>
 
+      <el-form-item prop="verifyCode" v-show = "loginType === 'password'">
+          <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
+          <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
+      </el-form-item>
+
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <el-button type="text" @click="changeLoginType">切换{{loginType === "message" ? '密码登录' : '短信登录'}}</el-button>
@@ -56,6 +61,7 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { gVerify } from '@/api/gVerify'
 import { setTimeout, clearTimeout } from 'timers';
 
 export default {
@@ -78,13 +84,14 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: ''
+        password: '',
+        verifycode:''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
-      loginType: 'message',
+      loginType: 'password',
       loading: false,
       passwordType: 'password',
       redirect: undefined,
@@ -98,6 +105,9 @@ export default {
       },
       immediate: true
     }
+  },
+  mounted(){
+    this.verifyCode = new GVerify("verifyCode");
   },
   methods: {
     showPwd() {
@@ -128,6 +138,9 @@ export default {
     },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
+              this.verifyCode.options.id = 'verifyCode';
+              this.verifyCode.refresh();
+
     },
     getMessage(){
       this.messageTime = 60;
@@ -135,6 +148,10 @@ export default {
         this.messageTime--;
         if(this.messageTime == 0) clearInterval(timer)
       },1000)
+    },
+    changeVerifyCode(){
+      this.verifyCode.refresh();
+      // console.log(this.verifyCode.options.code);
     }
   }
 }
@@ -247,6 +264,12 @@ $light_gray:#eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
+  }
+  .show-verifyCode{
+    position: absolute;
+    right: 10px;
+    top: 7px;
+    cursor: pointer;
   }
 }
 </style>
