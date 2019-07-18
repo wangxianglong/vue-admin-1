@@ -267,9 +267,11 @@ $light_gray:#eee;
   }
   .show-verifyCode{
     position: absolute;
-    right: 10px;
-    top: 7px;
+    right: 0px;
+    // top: 7px;
     cursor: pointer;
+    height:100%;
+    width: 180px;
   }
 }
 </style>
