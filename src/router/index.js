@@ -35,14 +35,23 @@ export const constantRoutes = [
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
+    // children: [
+    //   {
+    //     path: '/forgetPassword',
+    //     component: () => import('@/views/login/forgetPassword')
+    //   }
+    // ]
   },
-
+  {
+    path: '/forgetPassword',
+    component: () => import('@/views/login/forgetPassword'),
+    hidden: true
+  },
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -64,6 +73,18 @@ export const constantRoutes = [
         name: 'Table',
         component: () => import('@/views/table/index'),
         meta: { title: 'Table', icon: 'table' }
+      }
+    ]
+  },
+  {
+    path: '/table2',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Table2',
+        component: () => import('@/views/table2/index'),
+        meta: { title: 'Table2', icon: 'table' }
       }
     ]
   },

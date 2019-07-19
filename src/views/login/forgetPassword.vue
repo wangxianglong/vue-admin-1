@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">{{loginType === "message" ? '短信登录' : '密码登录'}}</h3>
+        <h3 class="title">忘记密码</h3>
       </div>
 
       <el-form-item prop="username">
@@ -21,42 +21,12 @@
         />
       </el-form-item>
 
-      <el-form-item prop="password">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
-          :type="passwordType"
-          placeholder="Password"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
-        />
-        <span class="show-pwd" @click="showPwd" v-if = "loginType === 'password'">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-
-        <span class="show-pwd" v-if = "loginType === 'message'" @click="getMessage">
-          <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
-          <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
-        </span>
-      </el-form-item>
-
       <el-form-item prop="verifyCode" v-show = "loginType === 'password'">
           <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
-      <el-button type="text" @click="changeLoginType">切换{{loginType === "message" ? '密码登录' : '短信登录'}}</el-button>
-      <router-link to="/forgetPassword">
-          <el-button type="text" >忘记密码</el-button>
-      </router-link>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">確定</el-button>
 
 
     </el-form>
