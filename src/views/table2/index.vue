@@ -4,15 +4,11 @@
     <template>
       <div class="filter-container">
         <el-date-picker
-          v-model="dateStart"
-          type="datetime"
-          placeholder="选择日期时间">
-        </el-date-picker>
-        <i class="el-icon-minus"></i>
-        <el-date-picker
-          v-model="dateEnd"
-          type="datetime"
-          placeholder="选择日期时间">
+          v-model="date"
+          type="daterange"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          default-value="2010-10-01">
         </el-date-picker>
         <el-input v-model="searchValue" 
                   placeholder="请搜索" style="width: 200px;" class="filter-item" 
@@ -30,56 +26,35 @@
         style="width: 100%">
         <el-table-column
           prop="num"
-          label="序号"
-          width="180">
+          label="序号">
         </el-table-column>
         <el-table-column
-          prop="identity"
-          label="管理权限"
+          prop="id"
+          label="工号"
           width="180">
         </el-table-column>
         <el-table-column
           prop="name"
-          label="姓名"
+          label="姓名">
+        </el-table-column>
+        <el-table-column
+          prop="phone"
+          label="手机号码"
           width="180">
         </el-table-column>
         <el-table-column
-          prop="state"
-          label="状态"
-          width="180">
-          <template slot-scope="scope">
-            <el-button v-if = "scope.row.state === '启用'"
-              @click.native.prevent="stateChange(scope.row)"
-              size="mini" type="primary">
-              启用
-            </el-button>
-            <el-button v-if = "scope.row.state === '禁用'"
-              @click.native.prevent="stateChange(scope.row)"
-              size="mini" type="danger">
-              禁用
-            </el-button>
-          </template>
+          prop="idCard"
+          label="身份证号码">
         </el-table-column>
         <el-table-column
-          prop="date"
-          label="创建日期">
+          prop="bankCard"
+          label="银行卡号"
+          width="180">
         </el-table-column>
         <el-table-column
+          prop="bank"
+          label="开户行"
           width="180">
-          <template slot-scope="scope">
-            <el-button 
-              @click.native.prevent="dataChange(scope.row,scope.$index)"
-              size="mini" type="primary"
-              :disabled = "scope.row.state === '禁用'">
-              修改
-            </el-button>
-
-            <el-button 
-              @click.native.prevent="dataDelete(scope.$index,tableData)"
-              size="mini" type="danger">
-              删除
-            </el-button>
-          </template>
         </el-table-column>
       </el-table>
       <el-dialog :title="isAdd?'添加信息':'修改信息'" :visible.sync="dialogFormVisible" :before-close="cancel"> 
@@ -115,31 +90,7 @@ import { getList } from '@/api/table'
 export default {
     data() {
       return {
-        tableData: [{
-          num: 1,
-          date: '2016-05-02',
-          name: '王小虎',
-          identity: '管理员',
-          state:'启用'
-        }, {
-          num: 2,
-          date: '2016-05-04',
-          name: '韩梅梅',
-          identity: '普通用户',
-          state:'启用'
-        }, {
-          num: 3,
-          date: '2016-05-01',
-          name: '李磊',
-          identity: '普通用户',
-          state:'禁用'
-        }, {
-          num: 4,
-          date: '2016-05-03',
-          name: '李雷',
-          identity: '普通用户',
-          state:'启用'
-        }],
+        tableData: [],
         dialogFormVisible: false,
         editRowIndex: -1,
         editData: {
@@ -163,9 +114,14 @@ export default {
         filterTableData:[],
         isFilter: false,
         isAdd:false,
-        dateStart:'',
-        dateEnd:''
+        date:''
       }
+    },
+    mounted(){
+      getList().then((res)=>{
+        this.tableData = res.data.items;
+        console.log(res);
+      })
     },
     methods:{
       stateChange(row){
@@ -280,24 +236,15 @@ export default {
             this.isAdd = false;
           }
         })
-      },
-      // handleDownload() {
-      // // this.downloadLoading = true
-      //   import('@/vendor/Export2Excel').then(excel => {
-      //     const tHeader = ['Id', 'Title', 'Author', 'Readings', 'Date']
-      //     const filterVal = ['id', 'title', 'author', 'pageviews', 'display_time']
-      //     const list = this.list
-      //     const data = this.formatJson(filterVal, list)
-      //     excel.export_json_to_excel({
-      //       header: tHeader,
-      //       data,
-      //       filename: this.filename,
-      //       autoWidth: this.autoWidth,
-      //       bookType: this.bookType
-      //     })
-      //   // this.downloadLoading = false
-      // })
+      }
 
     },
+    watch:{
+      date(){
+        if((this.date[1].getTime() - this.date[0].getTime()) > (3 * 30 * 24 * 3600 * 1000)){
+          this.$message('选择时间范围不能超过3个月');
+        }
+      }
+    }
 }
 </script>
