@@ -13,7 +13,7 @@
         <el-input
           ref="username"
           v-model="loginForm.username"
-          placeholder="Username"
+          placeholder="请输入手机号"
           name="username"
           type="text"
           tabindex="1"
@@ -21,12 +21,43 @@
         />
       </el-form-item>
 
-      <el-form-item prop="verifyCode" v-show = "loginType === 'password'">
+      <el-form-item prop="password">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          ref="password"
+          v-model="loginForm.password"
+          placeholder="请输入新密码"
+          type="password"
+          tabindex="2"
+          auto-complete="on"
+        />
+      </el-form-item>
+
+      <el-form-item prop="passwordNote">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input          
+          v-model="loginForm.passwordNote"
+          placeholder="短信验证码"
+          tabindex="2"
+          auto-complete="on"
+        />
+
+        <span class="show-pwd" @click="getMessage">
+          <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
+          <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
+        </span>
+      </el-form-item>
+
+      <el-form-item prop="verifycode">
           <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">確定</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="confirm(loginForm)">确定</el-button>
 
 
     </el-form>
@@ -38,38 +69,57 @@ import { validUsername } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import { setTimeout, clearTimeout } from 'timers';
 
-export default {
-  name: 'Login',
-  data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('请输入正确的账号'))
-      } else {
+
+const validateUsername = (rule, value, callback) => {
+    if (!(/^1[3456789]\d{9}$/.test(value))) {
+        callback(new Error('请输入正确的手机号'))
+    } else {
         callback()
-      }
     }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
+}
+const validatePassword = (rule, value, callback) => {
+    if (value.length < 6) {
         callback(new Error('密码不能少于6位'))
-      } else {
+    } else {
         callback()
-      }
     }
+}
+
+const validatePasswordNote = (rule, value, callback) => {
+    if (value.length <= 0) {
+        callback(new Error('验证码不能为空'))
+    } else {
+        callback()
+    }
+}
+const validateVerifycode = (rule, value, callback) => {
+    if (value.length <= 0) {
+        callback(new Error('验证码不能为空'))
+    } else {
+        callback()
+    }
+}
+
+export default {
+  name: 'forgetPassword',
+  data() {
+
     return {
       loginForm: {
-        username: 'admin',
+        username: '',
         password: '',
+        passwordNote:'',
         verifycode:''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
+        verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
-      loginType: 'password',
       loading: false,
-      passwordType: 'password',
       redirect: undefined,
-      messageTime : 0
+      messageTime : 0,
     }
   },
   watch: {
@@ -84,37 +134,10 @@ export default {
     this.verifyCode = new GVerify("verifyCode");
   },
   methods: {
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+    confirm(loginForm) {
+        if ((/^1[3456789]\d{9}$/.test(this.loginForm.username))  && this.verifyCode.validate(this.loginForm.verifycode)) {
+            console.log(1);
         }
-      })
-    },
-    changeLoginType(){
-      this.loginType = this.loginType  === "message" ? 'password' : 'message';
-              this.verifyCode.options.id = 'verifyCode';
-              this.verifyCode.refresh();
-
     },
     getMessage(){
       this.messageTime = 60;
@@ -125,7 +148,6 @@ export default {
     },
     changeVerifyCode(){
       this.verifyCode.refresh();
-      // console.log(this.verifyCode.options.code);
     }
   }
 }
