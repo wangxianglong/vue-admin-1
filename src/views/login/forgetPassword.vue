@@ -30,8 +30,6 @@
           v-model="loginForm.password"
           placeholder="请输入新密码"
           type="password"
-          tabindex="2"
-          auto-complete="on"
         />
       </el-form-item>
 
@@ -42,8 +40,6 @@
         <el-input          
           v-model="loginForm.passwordNote"
           placeholder="短信验证码"
-          tabindex="2"
-          auto-complete="on"
         />
 
         <span class="show-pwd" @click="getMessage">

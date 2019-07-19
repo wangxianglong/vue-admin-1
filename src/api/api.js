@@ -1,5 +1,6 @@
 let url = {
     forgetMessage: '/forgetMessage',
+    getMessage: '/loginByNote/getMessage',
 }
 
 

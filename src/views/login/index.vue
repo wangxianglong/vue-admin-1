@@ -1,11 +1,9 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'message'">
       <div class="title-container">
-        <h3 class="title">{{loginType === "message" ? '短信登录' : '密码登录'}}</h3>
+        <h3 class="title">短信登录</h3>
       </div>
-
       <el-form-item prop="username">
         <span class="svg-container">
           <svg-icon icon-class="user" />
@@ -16,39 +14,23 @@
           placeholder="Username"
           name="username"
           type="text"
-          tabindex="1"
-          auto-complete="on"
         />
       </el-form-item>
-
-      <el-form-item prop="password">
+      <el-form-item prop="passwordNote" >
         <span class="svg-container">
           <svg-icon icon-class="password" />
         </span>
         <el-input
-          :key="passwordType"
-          ref="password"
-          v-model="loginForm.password"
+          ref="passwordNote"
+          v-model="loginForm.passwordNote"
           :type="passwordType"
-          placeholder="Password"
-          name="password"
-          tabindex="2"
-          auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          placeholder="请输入短信验证码"
+          name="passwordNote"
         />
-        <span class="show-pwd" @click="showPwd" v-if = "loginType === 'password'">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
-
-        <span class="show-pwd" v-if = "loginType === 'message'" @click="getMessage">
+        <span class="show-pwd"  @click="getMessage">
           <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
           <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
         </span>
-      </el-form-item>
-
-      <el-form-item prop="verifycode" v-show = "loginType === 'password'">
-          <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
-          <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
@@ -59,6 +41,53 @@
       </router-link>
 
 
+    </el-form>
+    <el-form ref="loginFormPassword" :model="loginFormPassword" :rules="loginRulesPassword" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'password'">
+      <div class="title-container">
+        <h3 class="title">密码登录</h3>
+      </div>
+
+      <el-form-item prop="username">
+        <span class="svg-container">
+          <svg-icon icon-class="user" />
+        </span>
+        <el-input
+          ref="username"
+          v-model="loginFormPassword.username"
+          placeholder="Username"
+          name="username"
+          type="text"
+        />
+      </el-form-item>
+
+      <el-form-item prop="password" v-show = "loginType === 'password'">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          ref="password"
+          v-model="loginFormPassword.password"
+          :type="passwordType"
+          placeholder="请输入密码"
+          name="password"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+        </span>
+
+      </el-form-item>
+
+      <el-form-item prop="verifycode" v-show = "loginType === 'password'">
+          <el-input ref="verifycode" placeholder="请输入验证码" type="text" v-model="loginFormPassword.verifycode"></el-input>
+          <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
+      </el-form-item>
+
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
+
+      <el-button type="text" @click="changeLoginType">切换{{loginType === "message" ? '密码登录' : '短信登录'}}</el-button>
+      <router-link to="/forgetPassword">
+          <el-button type="text" >忘记密码</el-button>
+      </router-link>
     </el-form>
   </div>
 </template>
@@ -76,13 +105,20 @@ export default {
     return {
       loginForm: {
         username: '15765453456',
+        passwordNote:''
+      },
+      loginFormPassword: {
+        username: '15765453456',
         password: '',
-        verifycode:''
+        verifycode:'',
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
+      },
+      loginRulesPassword: {
+        // username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
       loginType: 'password',
@@ -115,20 +151,37 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          // this.loading = true
-          // this.$store.dispatch('user/login', this.loginForm).then(() => {
-          //   this.$router.push({ path: this.redirect || '/' })
-          //   this.loading = false
-          // }).catch(() => {
-          //   this.loading = false
-          // })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
+      if(this.loginType === 'message'){
+          this.$refs['loginForm'].validate((valid) => {
+            if(valid){
+              this.loading = true
+              this.$store.dispatch('user/login', this.loginForm).then(() => {
+                this.$router.push({ path: this.redirect || '/' })
+                this.loading = false
+              }).catch(() => {
+                this.loading = false
+              })
+            } else {
+              console.log('error submit!!')
+              return false
+            }
+        })      
+      }else{
+        this.$refs['loginFormPassword'].validate((valid) => {
+            if(valid){
+              this.loading = true
+              this.$store.dispatch('user/login', this.loginFormPassword).then(() => {
+                this.$router.push({ path: this.redirect || '/' })
+                this.loading = false
+              }).catch(() => {
+                this.loading = false
+              })
+            } else {
+              console.log('error submit!!')
+              return false
+            }
+        })
+      }
     },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
@@ -137,16 +190,17 @@ export default {
 
     },
     getMessage(){
+      if(this.timer) return;
       this.messageTime = 60;
-      var timer = setInterval(()=>{
+      this.timer = setInterval(()=>{
         this.messageTime--;
-        if(this.messageTime == 0) clearInterval(timer)
+        if(this.messageTime == 0) clearInterval(this.timer)
       },1000)
-      this.$refs.username.validate(valid => {
-        if(valid){
-
-        }
-      })
+      if(!this.$refs.username.validateState){
+        axios.post(url.getMessage,this.loginForm.username).then((res)=>{
+          console.log(res.data);
+        })
+      }
     },
     changeVerifyCode(){
       this.verifyCode.refresh();
