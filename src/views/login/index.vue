@@ -46,7 +46,7 @@
         </span>
       </el-form-item>
 
-      <el-form-item prop="verifyCode" v-show = "loginType === 'password'">
+      <el-form-item prop="verifycode" v-show = "loginType === 'password'">
           <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
@@ -64,36 +64,26 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import { setTimeout, clearTimeout } from 'timers';
+import axios from 'axios'
+import url from '@/api/api.js'
 
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('请输入正确的账号'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('密码不能少于6位'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
-        username: 'admin',
+        username: '15765453456',
         password: '',
         verifycode:''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
+        verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
       loginType: 'password',
       loading: false,
@@ -127,13 +117,13 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
+          // this.loading = true
+          // this.$store.dispatch('user/login', this.loginForm).then(() => {
+          //   this.$router.push({ path: this.redirect || '/' })
+          //   this.loading = false
+          // }).catch(() => {
+          //   this.loading = false
+          // })
         } else {
           console.log('error submit!!')
           return false
@@ -142,8 +132,8 @@ export default {
     },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
-              this.verifyCode.options.id = 'verifyCode';
-              this.verifyCode.refresh();
+      this.verifyCode.options.id = 'verifyCode';
+      this.verifyCode.refresh();
 
     },
     getMessage(){
@@ -152,6 +142,11 @@ export default {
         this.messageTime--;
         if(this.messageTime == 0) clearInterval(timer)
       },1000)
+      this.$refs.username.validate(valid => {
+        if(valid){
+
+        }
+      })
     },
     changeVerifyCode(){
       this.verifyCode.refresh();

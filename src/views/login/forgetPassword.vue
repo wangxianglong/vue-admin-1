@@ -65,47 +65,15 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
-import { setTimeout, clearTimeout } from 'timers';
 import axios from 'axios'
 import url from '@/api/api.js'
 
 
-const validateUsername = (rule, value, callback) => {
-    if (!(/^1[3456789]\d{9}$/.test(value))) {
-        callback(new Error('请输入正确的手机号'))
-    } else {
-        callback()
-    }
-}
-const validatePassword = (rule, value, callback) => {
-    if (value.length < 6) {
-        callback(new Error('密码不能少于6位'))
-    } else {
-        callback()
-    }
-}
-
-const validatePasswordNote = (rule, value, callback) => {
-    if (value.length <= 0) {
-        callback(new Error('验证码不能为空'))
-    } else {
-        callback()
-    }
-}
-const validateVerifycode = (rule, value, callback) => {
-    if (value.length <= 0) {
-        callback(new Error('验证码不能为空'))
-    } else {
-        callback()
-    }
-}
-
 export default {
   name: 'forgetPassword',
   data() {
-
     return {
       loginForm: {
         username: '',
@@ -120,16 +88,7 @@ export default {
         verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
       loading: false,
-      redirect: undefined,
       messageTime : 0,
-    }
-  },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true
     }
   },
   mounted(){
@@ -137,13 +96,14 @@ export default {
   },
   methods: {
     confirm(loginForm) {
-        if ((/^1[3456789]\d{9}$/.test(this.loginForm.username))  && this.verifyCode.validate(this.loginForm.verifycode)) {
-            console.log(1);
-        }
-        this.$router.go('/index');
-        this.$router.push({ name: 'login' })
-        axios.post(url.forgetMessage,this.loginForm).then((res)=>{
-          console.log(res);
+        this.$refs['loginForm'].validate((valid) => {
+          if(valid){
+            axios.post(url.forgetMessage,this.loginForm).then((res)=>{
+              if(res.status == 200){
+                this.$router.push({ name: 'login' })
+              };
+            })
+          }
         })
     },
     getMessage(){
