@@ -23,7 +23,6 @@
         <el-input
           ref="passwordNote"
           v-model="loginForm.passwordNote"
-          :type="passwordType"
           placeholder="请输入短信验证码"
           name="passwordNote"
         />
@@ -96,6 +95,7 @@
 import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import { setTimeout, clearTimeout } from 'timers';
+import {encrypt} from '@/utils/aes.js'
 import axios from 'axios'
 import url from '@/api/api.js'
 
@@ -117,7 +117,7 @@ export default {
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
       },
       loginRulesPassword: {
-        // username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
@@ -138,6 +138,7 @@ export default {
   },
   mounted(){
     this.verifyCode = new GVerify("verifyCode");
+    console.log(encrypt("你好"));
   },
   methods: {
     showPwd() {
