@@ -68,6 +68,8 @@
 import { validUsername } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import { setTimeout, clearTimeout } from 'timers';
+import axios from 'axios'
+import url from '@/api/api.js'
 
 
 const validateUsername = (rule, value, callback) => {
@@ -138,8 +140,11 @@ export default {
         if ((/^1[3456789]\d{9}$/.test(this.loginForm.username))  && this.verifyCode.validate(this.loginForm.verifycode)) {
             console.log(1);
         }
-        // this.$router.go('/index');
+        this.$router.go('/index');
         this.$router.push({ name: 'login' })
+        axios.post(url.forgetMessage,this.loginForm).then((res)=>{
+          console.log(res);
+        })
     },
     getMessage(){
       this.messageTime = 60;
