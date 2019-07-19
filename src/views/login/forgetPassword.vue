@@ -138,6 +138,8 @@ export default {
         if ((/^1[3456789]\d{9}$/.test(this.loginForm.username))  && this.verifyCode.validate(this.loginForm.verifycode)) {
             console.log(1);
         }
+        // this.$router.go('/index');
+        this.$router.push({ name: 'login' })
     },
     getMessage(){
       this.messageTime = 60;

@@ -34,13 +34,8 @@ export const constantRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login/index'),
+    name:'login',
     hidden: true
-    // children: [
-    //   {
-    //     path: '/forgetPassword',
-    //     component: () => import('@/views/login/forgetPassword')
-    //   }
-    // ]
   },
   {
     path: '/forgetPassword',
