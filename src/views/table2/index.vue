@@ -56,7 +56,31 @@
           label="开户行"
           width="180">
         </el-table-column>
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="180"
+          align="center">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="info"
+              v-show="scope.row.status=='stay'">待注册</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              v-show="scope.row.status=='error'">注册失败</el-button>
+            <el-button
+              size="mini"
+              type="primary"
+              v-show="scope.row.status=='success'">注册成功</el-button>
+          </template>
+        </el-table-column>
       </el-table>
+      <el-pagination
+        layout="prev, pager, next"
+        :total="1000">
+      </el-pagination>
       <el-dialog :title="isAdd?'添加信息':'修改信息'" :visible.sync="dialogFormVisible" :before-close="cancel"> 
         <el-form :model="editData" :rules="rules" ref="editData">
           <el-form-item label="姓名" prop="name" class="demo-ruleForm">

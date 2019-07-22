@@ -10,14 +10,15 @@ const data = Mock.mock({
   //   pageviews: '@integer(300, 5000)'
   // }]
   'items|50': [{
-    num: '@integer(0, 300)',
+    'num|+1': 1,
     id: '@id',
-    name: '@sentence(2, 3)',
+    'name|2-3': '@string',
     phone: '@integer(11)',
     bank: 'name',
     idCard: '@integer(11)',
     bankCard: '@integer(12)',
-    bank: '@sentence(2, 7)'
+    'bank|3-7': '@string',
+    'status|1': ['stay', 'success', 'error']
   }]
 })
 
