@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+    <el-form ref="forgetPassword" :model="forgetPasswordForm" :rules="forgetPasswordRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
         <h3 class="title">忘记密码</h3>
@@ -12,7 +12,7 @@
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
+          v-model="forgetPasswordForm.username"
           placeholder="请输入手机号"
           name="username"
           type="text"
@@ -27,9 +27,25 @@
         </span>
         <el-input
           ref="password"
-          v-model="loginForm.password"
+          v-model="forgetPasswordForm.password"
           placeholder="请输入新密码"
-          type="password"
+          type="text"
+          onfocus="this.type='password'"
+          autocomplete = "off"
+        />
+      </el-form-item>
+
+      <el-form-item prop="passwordAgain">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          ref="passwordAgain"
+          v-model="forgetPasswordForm.passwordAgain"
+          placeholder="请再一次输入新密码"
+          type="text"
+          onfocus="this.type='password'"
+          autocomplete = "off"
         />
       </el-form-item>
 
@@ -38,7 +54,7 @@
           <svg-icon icon-class="password" />
         </span>
         <el-input          
-          v-model="loginForm.passwordNote"
+          v-model="forgetPasswordForm.passwordNote"
           placeholder="短信验证码"
         />
 
@@ -49,12 +65,11 @@
       </el-form-item>
 
       <el-form-item prop="verifycode">
-          <el-input placeholder="请输入验证码" type="text" v-model="loginForm.verifycode"></el-input>
+          <el-input placeholder="请输入验证码" type="text" v-model="forgetPasswordForm.verifycode"></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="confirm(loginForm)">确定</el-button>
-
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="confirm(forgetPasswordForm)">确定</el-button>
 
     </el-form>
   </div>
@@ -66,20 +81,30 @@ import { gVerify } from '@/api/gVerify'
 import axios from 'axios'
 import url from '@/api/api.js'
 
-
 export default {
   name: 'forgetPassword',
   data() {
+    var validatePasswordAgain = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'));
+      } else if (value !== this.forgetPasswordForm.password) {
+        callback(new Error('两次输入密码不一致!'));
+      } else {
+        callback();
+      }
+    };
     return {
-      loginForm: {
+      forgetPasswordForm: {
         username: '',
         password: '',
+        passwordAgain: '',
         passwordNote:'',
         verifycode:''
       },
-      loginRules: {
+      forgetPasswordRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }],
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
         verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
@@ -91,14 +116,20 @@ export default {
     this.verifyCode = new GVerify("verifyCode");
   },
   methods: {
-    confirm(loginForm) {
-        this.$refs['loginForm'].validate((valid) => {
+    confirm(forgetPasswordForm) {
+        this.$refs.forgetPassword.validate((valid) => {
           if(valid){
-            axios.post(url.forgetMessage,this.loginForm).then((res)=>{
-              if(res.status == 200){
-                this.$router.push({ name: 'login' })
-              };
-            })
+            if(this.verifyCode.codeValidate(this.forgetPasswordForm.verifycode)){
+              axios.post(url.forgetMessage,this.forgetPasswordForm).then((res)=>{
+                if(res.status == 200){
+                  this.$router.push({ name: 'login' })
+                };
+              }).catch((error)=>{
+                console.log(error);
+              })
+            } else {
+              this.$message('请输入正确的验证码')
+            }
           }
         })
     },
@@ -117,8 +148,6 @@ export default {
 </script>
 
 <style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg:#283443;
 $light_gray:#fff;

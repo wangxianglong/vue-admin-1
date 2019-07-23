@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'message'">
+    <el-form ref="loginBySMS" :model="loginBySMSForm" :rules="loginBySMSRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'message'">
       <div class="title-container">
         <h3 class="title">短信登录</h3>
       </div>
@@ -9,10 +9,10 @@
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
+          ref="SMSUsername"
+          v-model="loginBySMSForm.username"
+          placeholder="用户手机号"
+          name="SMSUsername"
           type="text"
         />
       </el-form-item>
@@ -22,11 +22,11 @@
         </span>
         <el-input
           ref="passwordNote"
-          v-model="loginForm.passwordNote"
+          v-model="loginBySMSForm.passwordNote"
           placeholder="请输入短信验证码"
           name="passwordNote"
         />
-        <span class="show-pwd"  @click="getMessage">
+        <span class="show-pwd"  @click="getSMS">
           <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
           <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
         </span>
@@ -41,7 +41,7 @@
 
 
     </el-form>
-    <el-form ref="loginFormPassword" :model="loginFormPassword" :rules="loginRulesPassword" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'password'">
+    <el-form ref="loginByPassword" :model="loginByPasswordForm" :rules="loginByPasswordRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'password'">
       <div class="title-container">
         <h3 class="title">密码登录</h3>
       </div>
@@ -51,10 +51,10 @@
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginFormPassword.username"
+          ref="passwordUsername"
+          v-model="loginByPasswordForm.username"
           placeholder="Username"
-          name="username"
+          name="passwordUsername"
           type="text"
         />
       </el-form-item>
@@ -65,19 +65,18 @@
         </span>
         <el-input
           ref="password"
-          v-model="loginFormPassword.password"
-          :type="passwordType"
+          v-model="loginByPasswordForm.password"
           placeholder="请输入密码"
           name="password"
+          type="text"
+          onfocus="this.type='password'"
+          autocomplete = "off"
         />
-        <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-        </span>
 
       </el-form-item>
 
       <el-form-item prop="verifycode" v-show = "loginType === 'password'">
-          <el-input ref="verifycode" placeholder="请输入验证码" type="text" v-model="loginFormPassword.verifycode"></el-input>
+          <el-input ref="verifycode" placeholder="请输入验证码" type="text" v-model="loginByPasswordForm.verifycode"></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
@@ -92,10 +91,8 @@
 </template>
 
 <script>
-import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
+import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
-import { setTimeout, clearTimeout } from 'timers';
-import {encrypt} from '@/utils/aes.js'
 import axios from 'axios'
 import url from '@/api/api.js'
 
@@ -103,80 +100,54 @@ export default {
   name: 'Login',
   data() {
     return {
-      loginForm: {
+      loginBySMSForm: {
         username: '15765453456',
         passwordNote:''
       },
-      loginFormPassword: {
+      loginByPasswordForm: {
         username: '15765453456',
         password: '',
         verifycode:'',
       },
-      loginRules: {
+      loginBySMSRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
       },
-      loginRulesPassword: {
+      loginByPasswordRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         verifycode:[{ required: true, trigger: 'blur',validator: validateVerifycode }]
       },
       loginType: 'password',
       loading: false,
-      passwordType: 'password',
-      redirect: undefined,
       messageTime : 0
-    }
-  },
-  watch: {
-    $route: {
-      handler: function(route) {
-        this.redirect = route.query && route.query.redirect
-      },
-      immediate: true
     }
   },
   mounted(){
     this.verifyCode = new GVerify("verifyCode");
-    console.log(encrypt("你好"));
+    this.verifyCode.options.id = 'verifyCode';
   },
   methods: {
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
     handleLogin() {
       if(this.loginType === 'message'){
-          this.$refs['loginForm'].validate((valid) => {
+          this.$refs['loginBySMS'].validate((valid) => {
             if(valid){
-              this.loading = true
-              this.$store.dispatch('user/login', this.loginForm).then(() => {
-                this.$router.push({ path: this.redirect || '/' })
-                this.loading = false
-              }).catch(() => {
-                this.loading = false
-              })
-            } else {
+              this.login();
+            }else {
               console.log('error submit!!')
               return false
             }
         })      
       }else{
-        this.$refs['loginFormPassword'].validate((valid) => {
+        this.$refs['loginByPassword'].validate((valid) => {
             if(valid){
-              this.loading = true
-              this.$store.dispatch('user/login', this.loginFormPassword).then(() => {
-                this.$router.push({ path: this.redirect || '/' })
-                this.loading = false
-              }).catch(() => {
-                this.loading = false
-              })
+              if(this.verifyCode.codeValidate(this.loginByPasswordForm.verifycode)){
+                this.login();
+              }else{
+                this.$message('请输入正确的验证码');
+                this.loginByPasswordForm.password = ''
+                return false
+              }
             } else {
               console.log('error submit!!')
               return false
@@ -184,36 +155,40 @@ export default {
         })
       }
     },
+    login(){
+        this.loading = true
+        this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
+          this.$router.push('/')
+          this.loading = false
+        }).catch(() => {
+          this.loading = false
+        })
+    },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
-      this.verifyCode.options.id = 'verifyCode';
       this.verifyCode.refresh();
-
     },
-    getMessage(){
+    getSMS(){
       if(this.timer) return;
       this.messageTime = 60;
       this.timer = setInterval(()=>{
         this.messageTime--;
         if(this.messageTime == 0) clearInterval(this.timer)
       },1000)
-      if(!this.$refs.username.validateState){
-        axios.post(url.getMessage,this.loginForm.username).then((res)=>{
+      if(!this.$refs.SMSUsername.validateState){
+        axios.post(url.getMessage,this.loginBySMSForm.username).then((res)=>{
           console.log(res.data);
         })
       }
     },
     changeVerifyCode(){
       this.verifyCode.refresh();
-      // console.log(this.verifyCode.options.code);
     }
   }
 }
 </script>
 
 <style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg:#283443;
 $light_gray:#fff;
@@ -227,6 +202,7 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
+   min-width: 400px;
   .el-input {
     display: inline-block;
     height: 47px;
@@ -321,7 +297,6 @@ $light_gray:#eee;
   .show-verifyCode{
     position: absolute;
     right: 0px;
-    // top: 7px;
     cursor: pointer;
     height:100%;
     width: 180px;
