@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { validateUsername,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
+import { validatePhone,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import axios from 'axios'
 import url from '@/api/api.js'
@@ -102,7 +102,7 @@ export default {
         verifycode:''
       },
       forgetPasswordRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        username: [{ required: true, trigger: 'blur', validator: validatePhone }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }],
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],

@@ -13,12 +13,12 @@
         <el-input v-model="searchValue" 
                   placeholder="请搜索" style="width: 200px;" class="filter-item" 
                   @keyup.enter.native="handleFilter" />
-        <el-button  class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        <!-- <el-button  class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
           搜索
         </el-button>
         <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
           添加
-        </el-button>
+        </el-button> -->
       </div>
       <el-table
         :data="isFilter? filterTableData: tableData"

@@ -8,14 +8,18 @@ export function isExternal(path) {
 
 
 //验证手机号
-export function validateUsername(rule,value, callback){
-  setTimeout(()=> {
-    if (!(/^1[3456789]\d{9}$/.test(value))) {
-      callback(new Error('请输入正确的手机号'))
-    } else {
-      callback()
-    }
-  },1000)
+export function validatePhone(rule,value, callback){
+  if (value.length == 0) {
+    callback(new Error('手机号不能为空'))
+  } else {
+    setTimeout(()=> {
+      if (!(/^1[3456789]\d{9}$/.test(value))) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
+    },500)
+  }
 
 }
 
@@ -25,14 +29,12 @@ export function validatePassword(rule, value, callback){
     callback(new Error('请输入密码'))
   } else {
     setTimeout(()=> {
-      if (value.length < 6) {
-        callback(new Error('密码不能少于6位'))
-      } else if (value.length > 16) {
-        callback(new Error('密码不能大于16位'))
-      } else {
-          callback()
+      if(!(/^\w{6,16}$/.test(value))){
+        callback(new Error('密码位数6~16之间，只能包含字母、数字和下划线'))
+      } else{
+        callback()
       }
-    },1000)
+    },500)
   }
 }
 
@@ -47,7 +49,7 @@ export function validatePasswordNote(rule, value, callback){
       } else{
           callback()
       }
-    },1000)
+    },500)
   }
 }
 
@@ -58,4 +60,20 @@ export function validateVerifycode(rule, value, callback){
   } else {
       callback()
   }
+}
+
+//验证邮箱
+export function validateMail(rule,value, callback){
+  if (value.length == 0) {
+    callback(new Error('邮箱不能为空'))
+  } else {
+    setTimeout(()=> {
+      if (!(/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(value))) {
+        callback(new Error('请输入正确的邮箱'))
+      } else {
+        callback()
+      }
+    },500)
+  }
+
 }
