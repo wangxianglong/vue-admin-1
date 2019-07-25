@@ -17,6 +17,12 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
+import axios from 'axios'
+
+Vue.prototype.$axios = axios;   
+Vue.prototype.$axios.defaults.baseURL = '/api'
+Vue.prototype.$axios.defaults.headers.post["Content-type"] = "application/json"
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

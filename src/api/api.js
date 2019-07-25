@@ -1,12 +1,16 @@
 let url = {
-    forgetMessage: '/forgetMessage',
-    getMessage: '/loginByNote/getMessage',
+    userLogin: '/user/login',
+    userGetCode: '/user/getCode',
+    userCodeLogin: '/user/codeLogin',
+    userForgetPswd: '/user/forgetPswd'
+
 }
 
 
 //开发环境和真实环境的切换
 // let host = ''
-let host = 'https://easy-mock.com/mock/5d315834715b4c4113f7f6e9/login'
+// let host = 'http://192.168.3.25:8080'
+let host = ''
 
 for (let key in url) {
     if (url.hasOwnProperty(key)) {

@@ -30,7 +30,8 @@
     <el-table
       :data="isFilter? filterTableData.slice((currentPage-1)*pagesize,currentPage*pagesize) : tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
       stripe
-      style="width: 100%">
+      style="width: 100%"
+      v-loading="loading">
       <el-table-column
         prop="num"
         label="序号">
@@ -100,7 +101,8 @@
         background
         layout="prev, pager, next"
         :total="total"
-        @current-change="current_change">
+        :current-page="currentPage"
+        @current-change="currentChange">
     </el-pagination>
     <el-dialog :title="isAdd?'添加信息':'修改信息'" :visible.sync="dialogFormVisible" :before-close="cancel"> 
       <el-form :model="editData" :rules="rules" ref="editData">
@@ -188,13 +190,15 @@ export default {
         isAdd:false,
         total: 0,
         pagesize:10,
-        currentPage:1
+        currentPage:1,
+        loading: true
       }
     },
     created(){
       getList().then((res) => {
         this.tableData = res.data.items;
         this.total = res.data.total;
+        this.loading = false;
       })
     },
     methods:{
@@ -267,6 +271,7 @@ export default {
           this.isFilter = false;
           return;
         }
+        this.currentPage = 1;
         this.filterTableData = []
         this.filterTableData = this.tableData.filter(data => {
            return (String(data.name).indexOf(String(this.searchValue.byName)) > -1 &&
@@ -274,11 +279,13 @@ export default {
                    String(data.identity).indexOf(String(this.searchValue.byIdentity)) > -1);
         }),
         this.total = this.filterTableData.length;
+        this.currentChange(1);
         this.isFilter = true;
       },
       resetFilter(){
         this.isFilter = false;
         this.total = this.tableData.length;
+        this.currentPage = 1;
         this.searchValue.byName = '';
         this.searchValue.byPhone = '';
         this.searchValue.byIdentity ='';
@@ -316,7 +323,7 @@ export default {
           }
         })
       },
-      current_change(currentPage){
+      currentChange(currentPage){
         this.currentPage = currentPage;
       },
 

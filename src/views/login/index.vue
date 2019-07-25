@@ -93,8 +93,10 @@
 <script>
 import { validatePhone,validatePassword, validatePasswordNote,validateVerifycode } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
-import axios from 'axios'
+// import axios from 'axios'
 import url from '@/api/api.js'
+
+
 
 export default {
   name: 'Login',
@@ -157,28 +159,47 @@ export default {
     },
     login(){
         this.loading = true
-        this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
-          this.$router.push('/')
-          this.loading = false
-        }).catch(() => {
-          this.loading = false
+        this.$axios.post(url.userLogin,{params:{
+              mobile:'loginByPasswordForm.username',
+              pswd: 'loginByPasswordForm.password'              
+            }})
+        .then((res)=>{
+              console.log(res);
         })
+        // this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
+        //   this.$router.push('/')
+        //   this.loading = false
+        // }).catch(() => {
+        //   this.loading = false
+        // })
     },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
       this.verifyCode.refresh();
     },
     getSMS(){
-      if(this.timer) return;
-      this.messageTime = 60;
-      this.timer = setInterval(()=>{
-        this.messageTime--;
-        if(this.messageTime == 0) clearInterval(this.timer)
-      },1000)
+      // if(this.timer) return;
+      // this.messageTime = 60;
+      // this.timer = setInterval(()=>{
+      //   this.messageTime--;
+      //   if(this.messageTime == 0) clearInterval(this.timer)
+      // },1000)
+      console.log(1);
       if(!this.$refs.SMSUsername.validateState){
-        axios.post(url.getMessage,this.loginBySMSForm.username).then((res)=>{
-          console.log(res.data);
+        this.$axios.get(url.userGetCode,{params:{mobile:this.loginBySMSForm.username}}).then((res)=>{
+          console.log(res);
+          
+        }).catch((error)=>{
+          console.log(error);
+          console.log(this.loginBySMSForm.username);
         })
+
+        // this.$axios.interceptors.request.use(function (config) {
+        //   // config.data = qs.stringify(config.data);  //qs处理
+        //   return config;
+        // }, function (error) {
+        //   return Promise.reject(error);
+        // });
       }
     },
     changeVerifyCode(){

@@ -9,3 +9,13 @@ export default {
   name: 'App'
 }
 </script>
+
+<style lang="scss" scoped>
+body {
+    overflow: auto;
+}
+#app{
+  min-width:1200px
+}
+</style>
+

@@ -71,18 +71,18 @@ export const constantRoutes = [
       }
     ]
   },
-  // {
-  //   path: '/table2',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       name: 'Table2',
-  //       component: () => import('@/views/table2/index'),
-  //       meta: { title: 'Table2', icon: 'table' }
-  //     }
-  //   ]
-  // },
+  {
+    path: '/roster',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Roster',
+        component: () => import('@/views/roster/index'),
+        meta: { title: '花名册管理', icon: 'table' }
+      }
+    ]
+  },
 
   // {
   //   path: '/form',

@@ -7,3 +7,11 @@ export function getList(params) {
     params
   })
 }
+
+export function getRosterList(params) {
+  return request({
+    url: '/table/roster',
+    method: 'get',
+    params
+  })
+}
