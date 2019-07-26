@@ -78,7 +78,6 @@
 <script>
 import { validatePhone,validatePassword, validatePasswordNote,validateVerifycode} from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
-import axios from 'axios'
 import url from '@/api/api.js'
 
 export default {
@@ -95,10 +94,10 @@ export default {
     };
     return {
       forgetPasswordForm: {
-        username: '',
-        password: '',
-        passwordAgain: '',
-        passwordNote:'',
+        username: '15716597991',
+        password: '123456',
+        passwordAgain: '123456',
+        passwordNote:'123456',
         verifycode:''
       },
       forgetPasswordRules: {
@@ -120,7 +119,11 @@ export default {
         this.$refs.forgetPassword.validate((valid) => {
           if(valid){
             if(this.verifyCode.codeValidate(this.forgetPasswordForm.verifycode)){
-              axios.post(url.forgetMessage,this.forgetPasswordForm).then((res)=>{
+              this.$axios.post(url.userForgetPswd,{
+                  mobile:this.forgetPasswordForm.username,
+                  code:this.forgetPasswordForm.passwordNote,
+                  pswd:this.forgetPasswordForm.password
+              }).then((res)=>{
                 if(res.status == 200){
                   this.$router.push({ name: 'login' })
                 };
@@ -134,11 +137,32 @@ export default {
         })
     },
     getMessage(){
-      this.messageTime = 60;
-      var timer = setInterval(()=>{
-        this.messageTime--;
-        if(this.messageTime == 0) clearInterval(timer)
-      },1000)
+      if(/^1[3456789]\d{9}$/.test(this.forgetPasswordForm.username)){
+        if(this.messageTime > 0) return;
+        this.messageTime = 60;
+        var timer = setInterval(()=>{
+          this.messageTime--;
+          if(this.messageTime <= 0) {
+            clearInterval(timer)
+            this.messageTime = 0;
+          }
+        },1000)
+        this.$axios.get(url.userGetCode,{
+          params:{
+            mobile:this.forgetPasswordForm.username
+          }
+        }).then((res)=>{
+          console.log(res);
+          if(res.status == 200){
+            if(res.data.result == 200){
+            }else{
+              this.messageTime = 0;
+              this.$alert(res.data.msg)
+            }
+          };         
+        }).catch((error)=>{
+        })
+      }
     },
     changeVerifyCode(){
       this.verifyCode.refresh();

@@ -93,7 +93,6 @@
 <script>
 import { validatePhone,validatePassword, validatePasswordNote,validateVerifycode } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
-// import axios from 'axios'
 import url from '@/api/api.js'
 
 
@@ -103,11 +102,11 @@ export default {
   data() {
     return {
       loginBySMSForm: {
-        username: '15765453456',
+        username: '15716597991',
         passwordNote:''
       },
       loginByPasswordForm: {
-        username: '15765453456',
+        username: '15716597991',
         password: '',
         verifycode:'',
       },
@@ -122,7 +121,8 @@ export default {
       },
       loginType: 'password',
       loading: false,
-      messageTime : 0
+      messageTime : 0,
+      timer:null
     }
   },
   mounted(){
@@ -134,17 +134,31 @@ export default {
       if(this.loginType === 'message'){
           this.$refs['loginBySMS'].validate((valid) => {
             if(valid){
-              this.login();
+              this.$axios.get(url.userCodeLogin,{
+                params:{
+                  mobile: this.loginBySMSForm.username,
+                  code: this.loginBySMSForm.passwordNote                
+                }
+              }).then((res)=>{
+                this.login();
+              }).catch((error)=>{})
             }else {
               console.log('error submit!!')
               return false
             }
         })      
       }else{
+        console.log(1);
         this.$refs['loginByPassword'].validate((valid) => {
             if(valid){
               if(this.verifyCode.codeValidate(this.loginByPasswordForm.verifycode)){
-                this.login();
+                this.$axios.post(url.userLogin,{
+                    mobile:this.loginByPasswordForm.username,
+                    pswd: this.loginByPasswordForm.password                               
+                }).then((res)=>{
+                  console.log(res);
+                  this.login();
+                }).catch((error)=>{})
               }else{
                 this.$message('请输入正确的验证码');
                 this.loginByPasswordForm.password = ''
@@ -159,13 +173,7 @@ export default {
     },
     login(){
         this.loading = true
-        this.$axios.post(url.userLogin,{params:{
-              mobile:'loginByPasswordForm.username',
-              pswd: 'loginByPasswordForm.password'              
-            }})
-        .then((res)=>{
-              console.log(res);
-        })
+
         // this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
         //   this.$router.push('/')
         //   this.loading = false
@@ -178,28 +186,26 @@ export default {
       this.verifyCode.refresh();
     },
     getSMS(){
-      // if(this.timer) return;
-      // this.messageTime = 60;
-      // this.timer = setInterval(()=>{
-      //   this.messageTime--;
-      //   if(this.messageTime == 0) clearInterval(this.timer)
-      // },1000)
-      console.log(1);
-      if(!this.$refs.SMSUsername.validateState){
+      if(/^1[3456789]\d{9}$/.test(this.loginBySMSForm.username)){
+        if(this.messageTime > 0) return;
+        this.messageTime = 60;
+        this.timer = setInterval(()=>{
+          this.messageTime--;
+          if(this.messageTime <= 0) {
+            clearInterval(this.timer)
+            this.messageTime = 0;
+          }
+        },100)
         this.$axios.get(url.userGetCode,{params:{mobile:this.loginBySMSForm.username}}).then((res)=>{
-          console.log(res);
-          
+          if(res.status == 200){
+            if(res.data.result == 200){
+            }else{
+              this.messageTime = 0;
+              this.$alert(res.data.msg)
+            }
+          };         
         }).catch((error)=>{
-          console.log(error);
-          console.log(this.loginBySMSForm.username);
         })
-
-        // this.$axios.interceptors.request.use(function (config) {
-        //   // config.data = qs.stringify(config.data);  //qs处理
-        //   return config;
-        // }, function (error) {
-        //   return Promise.reject(error);
-        // });
       }
     },
     changeVerifyCode(){
