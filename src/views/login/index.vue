@@ -11,9 +11,10 @@
         <el-input
           ref="SMSUsername"
           v-model="loginBySMSForm.username"
-          placeholder="用户手机号"
+          placeholder="请输入用户手机号"
           name="SMSUsername"
           type="text"
+          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
         />
       </el-form-item>
       <el-form-item prop="passwordNote" >
@@ -25,6 +26,7 @@
           v-model="loginBySMSForm.passwordNote"
           placeholder="请输入短信验证码"
           name="passwordNote"
+          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
         />
         <span class="show-pwd"  @click="getSMS">
           <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
@@ -53,9 +55,10 @@
         <el-input
           ref="passwordUsername"
           v-model="loginByPasswordForm.username"
-          placeholder="Username"
+          placeholder="请输入手机号"
           name="passwordUsername"
           type="text"
+          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
         />
       </el-form-item>
 
@@ -75,8 +78,13 @@
 
       </el-form-item>
 
-      <el-form-item prop="verifycode" v-show = "loginType === 'password'">
-          <el-input ref="verifycode" placeholder="请输入验证码" type="text" v-model="loginByPasswordForm.verifycode"></el-input>
+      <el-form-item prop="verifycode" v-show = "loginType === 'password'"> 
+          <el-input ref="verifycode" 
+            placeholder="请输入验证码" 
+            type="text" 
+            v-model="loginByPasswordForm.verifycode"
+            onKeyUp = "this.value=this.value.replace(/[^\w]/g,'')"
+          ></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 
@@ -94,7 +102,7 @@
 import { validatePhone,validatePassword, validatePasswordNote,validateVerifycode } from '@/utils/validate'
 import { gVerify } from '@/api/gVerify'
 import url from '@/api/api.js'
-
+import axios from 'axios'
 
 
 export default {
@@ -122,7 +130,8 @@ export default {
       loginType: 'password',
       loading: false,
       messageTime : 0,
-      timer:null
+      timer:null,
+      redirect: undefined
     }
   },
   mounted(){
@@ -146,15 +155,17 @@ export default {
               console.log('error submit!!')
               return false
             }
-        })      
+          })     
       }else{
         console.log(1);
         this.$refs['loginByPassword'].validate((valid) => {
             if(valid){
+              var password = this.loginByPasswordForm.password;
+              this.loginByPasswordForm.password = '';
               if(this.verifyCode.codeValidate(this.loginByPasswordForm.verifycode)){
                 this.$axios.post(url.userLogin,{
                     mobile:this.loginByPasswordForm.username,
-                    pswd: this.loginByPasswordForm.password                               
+                    pswd: password                               
                 }).then((res)=>{
                   console.log(res);
                   this.login();
@@ -174,12 +185,12 @@ export default {
     login(){
         this.loading = true
 
-        // this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
-        //   this.$router.push('/')
-        //   this.loading = false
-        // }).catch(() => {
-        //   this.loading = false
-        // })
+        this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
+          this.$router.push('path: this.redirect || /')
+          this.loading = false
+        }).catch(() => {
+          this.loading = false
+        })
     },
     changeLoginType(){
       this.loginType = this.loginType  === "message" ? 'password' : 'message';
@@ -195,8 +206,12 @@ export default {
             clearInterval(this.timer)
             this.messageTime = 0;
           }
-        },100)
-        this.$axios.get(url.userGetCode,{params:{mobile:this.loginBySMSForm.username}}).then((res)=>{
+        },1000)
+        this.$axios.get(url.userGetCode,{
+          params:{
+            mobile:this.loginBySMSForm.username
+          }
+        }).then((res)=>{
           if(res.status == 200){
             if(res.data.result == 200){
             }else{
@@ -210,6 +225,14 @@ export default {
     },
     changeVerifyCode(){
       this.verifyCode.refresh();
+    }
+  },
+  watch: {
+    $route: {
+      handler: function(route) {
+        this.redirect = route.query && route.query.redirect
+      },
+      immediate: true
     }
   }
 }

@@ -18,6 +18,7 @@
           type="text"
           tabindex="1"
           auto-complete="on"
+          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
         />
       </el-form-item>
 
@@ -56,6 +57,7 @@
         <el-input          
           v-model="forgetPasswordForm.passwordNote"
           placeholder="短信验证码"
+          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
         />
 
         <span class="show-pwd" @click="getMessage">
@@ -65,7 +67,11 @@
       </el-form-item>
 
       <el-form-item prop="verifycode">
-          <el-input placeholder="请输入验证码" type="text" v-model="forgetPasswordForm.verifycode"></el-input>
+          <el-input placeholder="请输入验证码" 
+            type="text" 
+            v-model="forgetPasswordForm.verifycode"
+            onKeyUp = "this.value=this.value.replace(/[^\w]/g,'')"
+          ></el-input>
           <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
       </el-form-item>
 

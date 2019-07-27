@@ -20,7 +20,7 @@ import '@/permission' // permission control
 import axios from 'axios'
 
 Vue.prototype.$axios = axios;   
-Vue.prototype.$axios.defaults.baseURL = '/api'
+axios.defaults.baseURL = '/api'
 
 /**
  * If you don't want to use mock-server
