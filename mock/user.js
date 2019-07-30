@@ -8,6 +8,9 @@ const tokens = {
   },
   '15765453456':{
     token: 'editor-token'
+  },
+  '15716597991':{
+    token: 'editor-token'
   }
 }
 

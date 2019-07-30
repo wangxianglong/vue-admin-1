@@ -43,11 +43,6 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/404',
-    component: () => import('@/views/404'),
-    hidden: true
-  },
-  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
@@ -165,7 +160,11 @@ export const constantRoutes = [
   //     meta: { title: 'Echats', icon: 'user' }
   //   }]
   // },
-
+  {
+    path: '/404',
+    component: () => import('@/views/404'),
+    hidden: true
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

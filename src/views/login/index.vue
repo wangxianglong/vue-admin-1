@@ -1,100 +1,113 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginBySMS" :model="loginBySMSForm" :rules="loginBySMSRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'message'">
-      <div class="title-container">
-        <h3 class="title">短信登录</h3>
+    <div class="login-content">
+      <div class="login-icon">
+        <svg-icon icon-class="logo" class="logo-icon"/>
       </div>
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="SMSUsername"
-          v-model="loginBySMSForm.username"
-          placeholder="请输入用户手机号"
-          name="SMSUsername"
-          type="text"
-          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
-        />
-      </el-form-item>
-      <el-form-item prop="passwordNote" >
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          ref="passwordNote"
-          v-model="loginBySMSForm.passwordNote"
-          placeholder="请输入短信验证码"
-          name="passwordNote"
-          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
-        />
-        <span class="show-pwd"  @click="getSMS">
-          <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
-          <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
-        </span>
-      </el-form-item>
+      <div class="login">
+        <el-form ref="loginBySMS" :model="loginBySMSForm" :rules="loginBySMSRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'message'">
+          <div class="title-container">
+            手机快捷登录
+          </div>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
+          <div type="text" @click="changeLoginType" class="changTypeButton">
+            {{loginType === "message" ? '账号密码登录' : '手机快捷登录'}}<svg-icon icon-class="arrow"/>
+          </div>
+          <el-form-item prop="username" class="mobile-form">
+            <span class="svg-container">
+              <svg-icon icon-class="mobile" class="input-icon"/>
+            </span>
+            <el-input
+              ref="SMSUsername"
+              v-model="loginBySMSForm.username"
+              placeholder="请输入用户手机号"
+              name="SMSUsername"
+              type="text"
+              onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+              class="mobileInput"
+            />
+          </el-form-item>
+          <el-form-item prop="passwordNote" class="text-form">
+            <span class="svg-container">
+              <svg-icon icon-class="password" class="input-icon"/>
+            </span>
+            <el-input
+              ref="passwordNote"
+              v-model="loginBySMSForm.passwordNote"
+              placeholder="请输入短信验证码"
+              name="passwordNote"
+              onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+            />
+            <span class="show-pwd"  @click="getSMS">
+              <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
+              <el-button type="primary" v-else disabled>{{messageTime}}后再发送</el-button>
+            </span>
+          </el-form-item>
 
-      <el-button type="text" @click="changeLoginType">切换{{loginType === "message" ? '密码登录' : '短信登录'}}</el-button>
-      <router-link to="/forgetPassword">
-          <el-button type="text" >忘记密码</el-button>
-      </router-link>
+          <el-button :loading="loading" type="primary" class="loading" @click.native.prevent="handleLogin">登录</el-button>
+          <router-link to="/forgetPassword">
+              <el-button type="text" class="forgetPswd">忘记密码?</el-button>
+          </router-link>
 
 
-    </el-form>
-    <el-form ref="loginByPassword" :model="loginByPasswordForm" :rules="loginByPasswordRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'password'">
-      <div class="title-container">
-        <h3 class="title">密码登录</h3>
+        </el-form>
+        <el-form ref="loginByPassword" :model="loginByPasswordForm" :rules="loginByPasswordRules" class="login-form" auto-complete="on" label-position="left" v-show = "loginType === 'password'">
+          <div class="title-container">
+            账号密码登录
+          </div>
+
+          <div type="text" @click="changeLoginType" class="changTypeButton">
+            {{loginType === "message" ? '账号密码登录' : '手机快捷登录'}}<svg-icon icon-class="arrow"/>
+          </div>
+
+          <el-form-item prop="username" class="mobile-form">
+            <span class="svg-container icon" >
+              <svg-icon icon-class="mobile" class="input-icon"/>
+            </span>
+            <el-input
+              ref="passwordUsername"
+              v-model="loginByPasswordForm.username"
+              placeholder="请输入手机号"
+              name="passwordUsername"
+              type="text"
+              onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+            />
+          </el-form-item>
+
+          <el-form-item prop="password" v-show = "loginType === 'password'" class="pwsd-from">
+            <span class="svg-container">
+              <svg-icon icon-class="password" class="input-icon"/>
+            </span>
+            <el-input
+              ref="password"
+              v-model="loginByPasswordForm.password"
+              placeholder="请输入密码"
+              name="password"
+              type="text"
+              onfocus="this.type='password'"
+              autocomplete = "off"
+            />
+
+          </el-form-item>
+
+          <el-form-item prop="verifycode" v-show = "loginType === 'password'" class="code-form"> 
+              <el-input ref="verifycode" 
+                placeholder="请输入验证码" 
+                type="text" 
+                v-model="loginByPasswordForm.verifycode"
+                onKeyUp = "this.value=this.value.replace(/[^\w]/g,'')"
+              ></el-input>
+              <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
+          </el-form-item> 
+
+          <el-button :loading="loading" type="primary" class="loading" @click.native.prevent="handleLogin">登录</el-button>
+          <router-link to="/forgetPassword">
+              <el-button type="text" class="forgetPswd">忘记密码?</el-button>
+          </router-link>
+        </el-form>
       </div>
+    </div>
 
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="passwordUsername"
-          v-model="loginByPasswordForm.username"
-          placeholder="请输入手机号"
-          name="passwordUsername"
-          type="text"
-          onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
-        />
-      </el-form-item>
-
-      <el-form-item prop="password" v-show = "loginType === 'password'">
-        <span class="svg-container">
-          <svg-icon icon-class="password" />
-        </span>
-        <el-input
-          ref="password"
-          v-model="loginByPasswordForm.password"
-          placeholder="请输入密码"
-          name="password"
-          type="text"
-          onfocus="this.type='password'"
-          autocomplete = "off"
-        />
-
-      </el-form-item>
-
-      <el-form-item prop="verifycode" v-show = "loginType === 'password'"> 
-          <el-input ref="verifycode" 
-            placeholder="请输入验证码" 
-            type="text" 
-            v-model="loginByPasswordForm.verifycode"
-            onKeyUp = "this.value=this.value.replace(/[^\w]/g,'')"
-          ></el-input>
-          <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
-      </el-form-item>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
-      <el-button type="text" @click="changeLoginType">切换{{loginType === "message" ? '密码登录' : '短信登录'}}</el-button>
-      <router-link to="/forgetPassword">
-          <el-button type="text" >忘记密码</el-button>
-      </router-link>
-    </el-form>
   </div>
 </template>
 
@@ -150,14 +163,16 @@ export default {
                 }
               }).then((res)=>{
                 this.login();
-              }).catch((error)=>{})
+              }).catch((error)=>{
+                console.log(error);
+              })
             }else {
               console.log('error submit!!')
               return false
             }
           })     
       }else{
-        console.log(1);
+        this.login();
         this.$refs['loginByPassword'].validate((valid) => {
             if(valid){
               var password = this.loginByPasswordForm.password;
@@ -184,9 +199,8 @@ export default {
     },
     login(){
         this.loading = true
-
         this.$store.dispatch('user/login', this.loginByPasswordForm).then(() => {
-          this.$router.push('path: this.redirect || /')
+          this.$router.push(this.redirect)
           this.loading = false
         }).catch(() => {
           this.loading = false
@@ -213,11 +227,12 @@ export default {
           }
         }).then((res)=>{
           if(res.status == 200){
-            if(res.data.result == 200){
-            }else{
-              this.messageTime = 0;
-              this.$alert(res.data.msg)
-            }
+            console.log(res);
+            // if(res.data.result == 200){
+            // }else{
+            //   this.messageTime = 0;
+            //   this.$alert(res.data.msg)
+            // }
           };         
         }).catch((error)=>{
         })
@@ -240,116 +255,152 @@ export default {
 
 <style lang="scss">
 
-$bg:#283443;
-$light_gray:#fff;
-$cursor: #fff;
+$bg:#0091FF;
 
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-
-/* reset element-ui css */
-.login-container {
-   min-width: 400px;
-  .el-input {
-    display: inline-block;
-    height: 47px;
-    width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
-    }
-  }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
-  }
-}
-
-
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
-.login-container {
-  min-height: 100%;
+.login-container{
   width: 100%;
+  height: 100%;
   background-color: $bg;
-  overflow: hidden;
-
-  .login-form {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-
-    span {
-      &:first-of-type {
-        margin-right: 16px;
+  position: relative;
+  .login-content{
+    width: 970px;
+    height: 540px;
+    background-color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    .login-icon{
+      width: 470px;
+      height: 100%;
+      background-color: $bg;
+      opacity: .6;
+      float: left;
+      .logo-icon{
+        height: 125px;
+        width: 136px;
+        position: absolute;
+        top: 158px;
+        left: 173px;
+      }
+    }
+    .login{
+      width: 500px;
+      height: 100%;
+      margin-left: 470px;
+      position: relative;
+      .title-container{
+        font-family: '微软雅黑';
+        font-size: 26px;
+        color: #2b2b2b;
+        line-height: 33px;
+        position: relative;
+        top: 45px;
+        left: 57px;       
+      }
+      .changTypeButton{
+        position: absolute;
+        top: 45px;
+        right: 57px;
+        font-size: 24px;
+        line-height: 33px;
+        color: $bg;
+        cursor: pointer;
+      }
+      .mobile-form{
+        width: 388px;
+        height: 88px;
+        position: absolute;
+        top: 128px;
+        left: 57px;
+        input{
+          width: 388px;
+          height: 58px;        
+          &.el-input__inner{
+            padding-left: 55px;
+          }
+        }
+      }
+      .pwsd-from{
+        width: 388px;
+        height: 88px;
+        position: absolute;
+        top: 216px;
+        left: 57px;
+        input{
+          width: 388px;
+          height: 58px;        
+          &.el-input__inner{
+            padding-left: 55px;
+          }
+        }
+      }
+      .code-form{
+        width: 388px;
+        height: 88px;
+        position: absolute;
+        top: 304px;
+        left: 57px;
+        input{
+          width: 244px;
+          height: 58px;   
+        }
+        .show-verifyCode{
+          display: inline-block;
+          width: 144px;
+          height: 58px;
+          position: absolute;
+          top: 0;
+          right: 0;
+        }
+      }
+      .text-form{
+        width: 388px;
+        height: 88px;
+        position: absolute;
+        top: 238px;
+        left: 57px;
+        input{
+          width: 388px;
+          height: 58px; 
+          &.el-input__inner{
+            padding-left: 55px;
+            padding-right: 53px;
+          } 
+        }
+        .show-pwd{
+          position: absolute;
+          top: 0;
+          right: 0;
+          font-size: 26px;
+          .el-button{
+            height: 58px;
+          }
+        }
+      }
+      .input-icon{
+        width: 26px;
+        height: 24px;
+        margin: 17px 10px;
+        position: absolute;
+        z-index: 99999;
+        color: #888888;
+      }
+      .loading{
+        width: 388px;
+        height: 50px;
+        position: absolute;
+        top: 392px;
+        left: 57px;
+      }
+      .forgetPswd{
+        position: absolute;
+        top: 442px;
+        right: 57px;
+        color: #2b2b2b;
       }
     }
   }
-
-  .svg-container {
-    padding: 6px 5px 6px 15px;
-    color: $dark_gray;
-    vertical-align: middle;
-    width: 30px;
-    display: inline-block;
-  }
-
-  .title-container {
-    position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
-    }
-  }
-
-  .show-pwd {
-    position: absolute;
-    right: 10px;
-    top: 7px;
-    font-size: 16px;
-    color: $dark_gray;
-    cursor: pointer;
-    user-select: none;
-  }
-  .show-verifyCode{
-    position: absolute;
-    right: 0px;
-    cursor: pointer;
-    height:100%;
-    width: 180px;
-  }
 }
+
 </style>
