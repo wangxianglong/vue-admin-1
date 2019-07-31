@@ -23,6 +23,7 @@
               tabindex="1"
               auto-complete="on"
               onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+              clearable
             />
           </el-form-item>
 
@@ -34,6 +35,7 @@
               v-model="forgetPasswordForm.passwordNote"
               placeholder="短信验证码"
               onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+              clearable
             />
 
             <span class="show-pwd" @click="getMessage">
@@ -53,10 +55,14 @@
               type="text"
               onfocus="this.type='password'"
               autocomplete = "off"
+              clearable
             />
           </el-form-item>
 
           <el-button :loading="loading" type="primary" class="loading" @click.native.prevent="confirm(forgetPasswordForm)">确定</el-button>
+          <router-link to="/login">
+              <el-button type="text" class="login">去登陆</el-button>
+          </router-link>
 
         </el-form>
       </div>
@@ -65,7 +71,7 @@
 </template>
 
 <script>
-import { validatePhone,validatePassword, validatePasswordNote} from '@/utils/validate'
+import { validatePhone,validateNewPassword, validatePasswordNote} from '@/utils/validate'
 import url from '@/api/api.js'
 
 export default {
@@ -79,7 +85,7 @@ export default {
       },
       forgetPasswordRules: {
         username: [{ required: true, trigger: 'blur', validator: validatePhone }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        password: [{ required: true, trigger: 'blur', validator: validateNewPassword }],
         passwordNote:[{ required: true, trigger: 'blur',validator: validatePasswordNote }],
       },
       loading: false,
@@ -190,7 +196,7 @@ $bg:#0091FF;
         left: 57px;
         input{
           width: 388px;
-          height: 58px;        
+          height: 58px;
           &.el-input__inner{
             padding-left: 55px;
           }
@@ -248,6 +254,12 @@ $bg:#0091FF;
         position: absolute;
         top: 392px;
         left: 57px;
+      }
+      .login{
+        position: absolute;
+        top: 442px;
+        right: 57px;
+        color: #2b2b2b;
       }
     }
     

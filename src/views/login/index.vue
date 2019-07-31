@@ -9,7 +9,6 @@
           <div class="title-container">
             手机快捷登录
           </div>
-
           <div type="text" @click="changeLoginType" class="changTypeButton">
             {{loginType === "message" ? '账号密码登录' : '手机快捷登录'}}<svg-icon icon-class="arrow"/>
           </div>
@@ -24,7 +23,7 @@
               name="SMSUsername"
               type="text"
               onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
-              class="mobileInput"
+              clearable
             />
           </el-form-item>
           <el-form-item prop="passwordNote" class="text-form">
@@ -37,6 +36,7 @@
               placeholder="请输入短信验证码"
               name="passwordNote"
               onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+              clearable
             />
             <span class="show-pwd"  @click="getSMS">
               <el-button type="primary" v-if = "messageTime === 0">获取短信</el-button>
@@ -71,6 +71,7 @@
               name="passwordUsername"
               type="text"
               onKeyUp = "this.value=this.value.replace(/[^\d]/g,'')"
+              clearable
             />
           </el-form-item>
 
@@ -86,6 +87,7 @@
               type="text"
               onfocus="this.type='password'"
               autocomplete = "off"
+              clearable
             />
 
           </el-form-item>
@@ -96,6 +98,7 @@
                 type="text" 
                 v-model="loginByPasswordForm.verifycode"
                 onKeyUp = "this.value=this.value.replace(/[^\w]/g,'')"
+                clearable
               ></el-input>
               <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
           </el-form-item> 
@@ -303,6 +306,7 @@ $bg:#0091FF;
         top: 45px;
         right: 57px;
         font-size: 24px;
+        height: 33px;
         line-height: 33px;
         color: $bg;
         cursor: pointer;
@@ -342,7 +346,7 @@ $bg:#0091FF;
         top: 304px;
         left: 57px;
         input{
-          width: 244px;
+          width: 234px;
           height: 58px;   
         }
         .show-verifyCode{
@@ -358,7 +362,7 @@ $bg:#0091FF;
         width: 388px;
         height: 88px;
         position: absolute;
-        top: 238px;
+        top: 258px;
         left: 57px;
         input{
           width: 388px;

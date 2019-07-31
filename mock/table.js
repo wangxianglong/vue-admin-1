@@ -2,15 +2,15 @@ import Mock from 'mockjs'
 
 const data = Mock.mock({
   'items|50': [{
-    'num|+1': 1,
-    'name': /[a-z]{2,3}/,
-    'phone': /189\d{8}/,
-    'mail': '@email',
+    'customerId|+1': 1,
+    'fullName': /[a-z]{2,3}/,
+    'mobile': /189\d{8}/,
+    'eMail': '@email',
     'createDate': '@date(yyyy-MM-dd)',
     'lastDate': '@date(yyyy-MM-dd)',
-    'identity|1': ['管理员', '普通用户'],
-    'state|1': ['正常', '禁用'],
-    'pwd': /\w{6,16}/
+    'roles|1': ['管理员', '普通用户'],
+    'isForbidden|1': [0, 1],
+    'pswd': /\w{6,16}/
   }]
 })
 
@@ -22,7 +22,7 @@ const rosterData = Mock.mock({
     'name': /[a-zA-Z]{4,11}/,
     'sex': ['男', '女'],
     'phone': /157\d{8}/,
-    'cardType' : '身份证',
+    'cardType': '身份证',
     'bank': /[a-zA-Z]{11}/,
     'idCard': /\d{18}/,
     'bankCard': /62\d{8}/,
@@ -33,8 +33,7 @@ const rosterData = Mock.mock({
   }]
 })
 
-export default [
-  {
+export default [{
     url: '/table/list',
     type: 'get',
     response: config => {

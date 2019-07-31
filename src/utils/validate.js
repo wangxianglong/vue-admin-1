@@ -38,6 +38,20 @@ export function validatePassword(rule, value, callback){
   }
 }
 
+export function validateNewPassword(rule, value, callback){
+  if (value.length == 0) {
+    callback(new Error('请输入新密码'))
+  } else {
+    setTimeout(()=> {
+      if(!(/^\w{6,16}$/.test(value))){
+        callback(new Error('密码位数6~16之间，只能包含字母、数字和下划线'))
+      } else{
+        callback()
+      }
+    },500)
+  }
+}
+
 //验证短信验证码
 export function validatePasswordNote(rule, value, callback){
   if (value.length <= 0) {
@@ -45,7 +59,7 @@ export function validatePasswordNote(rule, value, callback){
   } else {
     setTimeout(()=> {
       if (value.length != 6) {
-        callback(new Error('请输入正确的短信验证码'))
+        callback(new Error('请输入正确的6位短信验证码'))
       } else{
           callback()
       }
@@ -58,7 +72,13 @@ export function validateVerifycode(rule, value, callback){
   if (value.length <= 0) {
       callback(new Error('验证码不能为空'))
   } else {
-      callback()
+    setTimeout(()=> {
+      if (value.length != 4) {
+        callback(new Error('请输入正确的4位验证码'))
+      } else{
+          callback()
+      }
+    },500)
   }
 }
 
