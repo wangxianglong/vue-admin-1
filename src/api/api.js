@@ -8,8 +8,10 @@ let url = {
   userForbidden: 'user/2', //禁用用户
   userList: 'user/1', //查看用户
   rosterLists: 'roster', //花名册查询
+  rosterAdd: 'roster', //花名册添加
   rosterImportExcel: 'roster/importExcel', //导入exel文件
   rosterDelete: 'roster/delete', //花名册删除
+  rosterDeleteAll: 'roster/deleteAll', //花名册全部删除
   rosterEdit: 'roster/1', //花名册编辑
 }
 

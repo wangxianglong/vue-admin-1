@@ -61,8 +61,15 @@
           style="margin-left: 10px;"
           type="danger"
           icon="el-icon-delete"
-          @click="datasDelete(tableData)"
+          @click="deleteUserDatas(tableData)"
         >删除选中</el-button>
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px;"
+          type="danger"
+          icon="el-icon-delete"
+          @click="deleteUserDataAll"
+        >全部删除</el-button>
         <el-button
           class="filter-item"
           style="margin-left: 10px;"
@@ -77,6 +84,7 @@
         border
         @selection-change="handleSelectionChange"
         style="width: 100%"
+        v-loading="loading"
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="jobNumber" label="工号"></el-table-column>
@@ -151,7 +159,7 @@
               type="primary"
             >编辑</el-button>
             <el-button
-              @click.native.prevent="dataDelete(scope.$index,tableData)"
+              @click.native.prevent="deleteUserData(scope.$index,tableData)"
               icon="el-icon-delete"
               size="mini"
               type="danger"
@@ -159,6 +167,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="block">
+        <el-pagination
+          layout="sizes, prev, pager, next"
+          @size-change="handleSizeChange"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          :page-size="10"
+          @current-change="paginationChange"
+        ></el-pagination>
+      </div>
     </template>
     <el-dialog title="查看个人信息" :visible.sync="checkUserFormVisible">
       <el-form :model="checkData">
@@ -245,21 +263,22 @@
 <script>
 import { getRosterList } from "@/api/table";
 import url from "@/api/api.js";
+import qs from "qs";
 export default {
   data() {
     return {
       tableData: [],
       editRowIndex: -1,
       editData: {
-        jobNumber: "",
-        fullName: "",
-        sex: "",
-        mobile: "",
-        idType: "",
-        bankAccount: "",
-        bankName: "",
-        registerStatus: "",
-        typeOfWork: "",
+        jobNumber: "q",
+        fullName: "q",
+        sex: "女",
+        mobile: "157576651",
+        idType: "身份证",
+        bankAccount: "1111",
+        bankName: "1111",
+        registerStatus: "0",
+        typeOfWork: "11",
         state: ""
       },
       checkData: {
@@ -305,7 +324,10 @@ export default {
       uploadType: "1",
       pageSize: 10,
       pageNum: 1,
-      checkedMobiles: []
+      checkedMobiles: [],
+      total: -1,
+      currentPage: 1,
+      loading: false
     };
   },
   mounted() {
@@ -337,25 +359,44 @@ export default {
         });
     },
     //单条删除
-    dataDelete(index, rows) {
+    deleteUserData(index, rows) {
       this.$confirm("此操作将删除用户, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
+          this.checkedMobiles = [];
+          this.checkedMobiles.push(rows[index].mobile);
           this.$axios
-            .post(url.rosterDelete, {
-              mobile: rows[index].mobile,
-              customerId: 1
-            })
+            .post(
+              url.rosterDelete,
+              // qs.stringify(
+              {
+                mobiles: this.checkedMobiles,
+                customerId: 1
+              }
+              //   { indices: false }
+              // )
+            )
             .then(res => {
               console.log(res);
-              this.$message({
-                type: "success",
-                message: "删除成功!"
-              });
-              this.getDataLists();
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  this.$message({
+                    type: "success",
+                    message: "删除成功!"
+                  });
+                  this.getDataLists();
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("删除失败");
+              }
+            })
+            .catch(error => {
+              this.$message.error("删除失败");
             });
         })
         .catch(() => {
@@ -366,7 +407,7 @@ export default {
         });
     },
     //批量删除
-    datasDelete() {
+    deleteUserDatas() {
       this.$confirm("此操作将删除选中用户, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -378,17 +419,75 @@ export default {
             this.checkedMobiles.push(this.tableChecked[key].mobile);
           }
           this.$axios
-            .post(url.rosterDelete, {
-              mobile: this.checkedMobiles,
+            .post(
+              url.rosterDelete,
+              // qs.stringify(
+              {
+                mobiles: this.checkedMobiles,
+                customerId: 1
+              }
+              //   { indices: false }
+              // )
+            )
+            .then(res => {
+              console.log(res);
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  this.$message({
+                    type: "success",
+                    message: "删除成功!"
+                  });
+                  if (this.checkedMobiles.length === this.tableData.length) {
+                    if (this.pageNum > 1) {
+                      this.pageNum--;
+                    }
+                  }
+                  this.getDataLists();
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("删除失败");
+              }
+            })
+            .catch(error => {
+              this.$message.error("删除失败");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    //全部删除
+    deleteUserDataAll() {
+      this.$confirm("此操作将删除全部用户, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$axios
+            .post(url.rosterDeleteAll, {
               customerId: 1
             })
             .then(res => {
               console.log(res);
-              this.$message({
-                type: "success",
-                message: "删除成功!"
-              });
-              this.getDataLists();
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  this.$message({
+                    type: "success",
+                    message: "删除成功!"
+                  });
+                  this.getDataLists();
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("删除失败");
+              }
             });
         })
         .catch(() => {
@@ -436,6 +535,7 @@ export default {
     },
     //获取数据列表
     getDataLists() {
+      this.loading = true;
       this.$axios
         .get(url.rosterLists, {
           params: {
@@ -446,8 +546,32 @@ export default {
         })
         .then(res => {
           console.log(res);
-          this.tableData = res.data.data.list;
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.tableData = res.data.data.list;
+              this.total = res.data.data.total;
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          } else {
+            this.$message.error("获取数据出错！");
+          }
+          this.loading = false;
+        })
+        .catch(erroe => {
+          this.$message.error("获取数据出错！");
+          this.loading = false;
         });
+    },
+    //改变页数
+    paginationChange(currentPage) {
+      this.pageNum = currentPage;
+      this.getDataLists();
+    },
+    //改变每页数据量
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.getDataLists();
     },
     //上传文件
     beforeUpload(file) {
@@ -473,10 +597,21 @@ export default {
       fd.append("file", file); //传文件
       fd.append("customerId", 1);
       fd.append("importId", this.uploadType);
-      this.$axios.post(url.rosterImportExcel, fd).then(function(res) {
+      this.$axios.post(url.rosterImportExcel, fd).then(res => {
         console.log(res);
+        if (res.status === 200) {
+          if (res.data.result === 1) {
+            this.getDataLists();
+            this.$message.success("上传成功");
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        } else {
+          this.$message.error("上传失败");
+        }
       });
     },
+    //文件个数限制
     handleExceed(files, fileList) {
       this.$message.warning("一次只能上传一个文件");
     },
@@ -499,9 +634,22 @@ export default {
     //确定添加用户
     addUserDataTrue() {
       let newData = this.editData;
-      this.tableData.push(JSON.parse(JSON.stringify(newData)));
-      this.userFormVisible = false;
-      this.isAdd = false;
+      newData.customerId = 1;
+      this.$axios.post(url.rosterAdd, newData).then(res => {
+        console.log(res);
+        this.userFormVisible = false;
+        this.isAdd = false;
+        if (res.status === 200) {
+          if (res.data.result === 1) {
+            this.getDataLists();
+            this.$message.success("添加成功");
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        } else {
+          this.$message.error("添加失败");
+        }
+      });
     },
     //编辑用户
     editUserData(row, index) {
@@ -513,10 +661,29 @@ export default {
     },
     //确定编辑用户
     editUserDataTrue() {
-      this.tableData[this.editRowIndex] = JSON.parse(
-        JSON.stringify(this.editData)
-      );
-      this.cancel();
+      this.$axios
+        .post(url.rosterEdit, {
+          mobile: this.editData.mobile,
+          customerId: 1,
+          sex: this.editData.sex,
+          typeOfWork: this.editData.typeOfWork,
+          jobNumber: this.editData.jobNumber
+        })
+        .then(res => {
+          console.log(res);
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.tableData[this.editRowIndex] = JSON.parse(
+                JSON.stringify(this.editData)
+              );
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          } else {
+            this.$message.error("编辑失败");
+          }
+          this.cancel();
+        });
     },
     //取消添加、编辑
     cancel() {
