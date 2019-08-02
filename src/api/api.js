@@ -7,6 +7,10 @@ let url = {
   userAdd: '/user', //添加新用户
   userForbidden: 'user/2', //禁用用户
   userList: 'user/1', //查看用户
+  rosterLists: 'roster', //花名册查询
+  rosterImportExcel: 'roster/importExcel', //导入exel文件
+  rosterDelete: 'roster/delete', //花名册删除
+  rosterEdit: 'roster/1', //花名册编辑
 }
 
 

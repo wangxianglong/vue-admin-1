@@ -17,18 +17,16 @@ const data = Mock.mock({
 const rosterData = Mock.mock({
 
   'items|50': [{
-    'num|+1': 1,
-    'id': '@id',
-    'name': /[a-zA-Z]{4,11}/,
-    'sex': ['男', '女'],
-    'phone': /157\d{8}/,
-    'cardType': '身份证',
-    'bank': /[a-zA-Z]{11}/,
+    'jobNumber': '@id',
+    'fullName': /[a-zA-Z]{4,11}/,
+    'sex|1': ['男', '女'],
+    'mobile': /157\d{8}/,
+    'idType': '身份证',
     'idCard': /\d{18}/,
-    'bankCard': /62\d{8}/,
-    'bank': /[a-zA-Z]{4,11}/,
-    'status|1': ['stay', 'success', 'error'],
-    'type|1': ['经理', '出纳', '财务'],
+    'bankAccount': /62\d{8}/,
+    'bankName': /[a-zA-Z]{4,11}/,
+    'registerStatus|1': ['0', '1', '2'],
+    'typeOfWork|1': ['经理', '出纳', '财务'],
     'state|1': ['forbidden', 'success'],
   }]
 })

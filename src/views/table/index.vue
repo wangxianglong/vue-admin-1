@@ -269,15 +269,18 @@ export default {
     //编辑弹框
     dataChange(row, index) {
       this.editRowIndex = index;
-      this.editData = row;
-      this.value = row.roles;
+      let rowData = row;
+      this.editData = JSON.parse(JSON.stringify(rowData));
+      this.value = rowData.roles;
       this.dialogFormVisible = true;
     },
     //编辑修改
     dataChanged() {
       this.$refs["editData"].validate(valid => {
         if (valid) {
-          this.tableData[this.editRowIndex] = this.editData;
+          this.tableData[this.editRowIndex] = JSON.parse(
+            JSON.stringify(this.editData)
+          );
           this.tableData[this.editRowIndex]["roles"] = this.value;
           this.cancel();
         }
@@ -286,14 +289,10 @@ export default {
     //取消修改
     cancel() {
       this.dialogFormVisible = false;
-      (this.editData = {
-        fullName: "",
-        mobile: "",
-        eMail: "",
-        roles: "",
-        pswd: ""
-      }),
-        (this.value = -1);
+      for (let key in this.editData) {
+        this.editData[key] = "";
+      }
+      this.value = -1;
       this.$refs["editData"].clearValidate();
     },
     //模糊字段查询
