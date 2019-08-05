@@ -26,28 +26,28 @@
           placeholder="按手机号搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleSearch"
+          @keyup.enter.native="handleSearch(1)"
         />
         <el-input
           v-model.trim="jobNumberValue"
           placeholder="按工号搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleSearch"
+          @keyup.enter.native="handleSearch(1)"
         />
         <el-input
           v-model.trim="fullNameValue"
           placeholder="按姓名搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleSearch"
+          @keyup.enter.native="handleSearch(1)"
         />
         <el-button-group>
           <el-button
             class="filter-item"
             type="primary"
             icon="el-icon-search"
-            @click.native="handleSearch"
+            @click.native="handleSearch(1)"
           >搜索</el-button>
           <el-button
             class="filter-item"
@@ -79,7 +79,7 @@
         >新增</el-button>
       </div>
       <el-table
-        :data="isFilter? filterTableData: tableData"
+        :data="tableData"
         ref="rosterTable"
         border
         @selection-change="handleSelectionChange"
@@ -175,6 +175,7 @@
           :total="total"
           :page-sizes="[10, 20, 50, 100]"
           :page-size="10"
+          :current-page.sync="currentPage"
           @current-change="paginationChange"
         ></el-pagination>
       </div>
@@ -262,10 +263,10 @@
 </template>
 
 <script>
-import { getRosterList, validateId } from "@/api/table";
+import { getRosterList } from "@/api/table";
 import url from "@/api/api.js";
 import qs from "qs";
-import { validatePhone } from "@/utils/validate";
+import { validatePhone, validateId } from "@/utils/validate";
 export default {
   data() {
     return {
@@ -315,16 +316,11 @@ export default {
         mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
         idCard: [{ required: true, trigger: "blur", validator: validateId }]
       },
-      filterTableData: [],
-      isFilter: false,
       isAdd: false,
-      date: "",
       tableChecked: [],
-      ids: [],
       checkUserFormVisible: false,
       userFormVisible: false,
       formLabelWidth: "120px",
-      isAdd: "",
       uploadType: "1",
       pageSize: 10,
       pageNum: 1,
@@ -339,7 +335,8 @@ export default {
         registerStatus: [],
         state: [],
         typeOfWork: []
-      }
+      },
+      filterType: ""
     };
   },
   mounted() {
@@ -510,7 +507,7 @@ export default {
         });
     },
     //根据手机号，真实姓名，工号模糊查询
-    handleSearch() {
+    handleSearch(pageNum) {
       this.$axios
         .get(url.rosterSearch, {
           params: {
@@ -518,36 +515,55 @@ export default {
             mobile: this.mobileValue,
             jobNumber: this.jobNumberValue,
             fullName: this.fullNameValue,
-            pageNum: 1,
+            pageNum: pageNum,
             pageSize: this.pageSize
           }
         })
         .then(res => {
           console.log(res);
-          this.tableData = res.data.data.list;
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.currentPage = 1;
+              this.filterType = "search";
+              if (pageNum === 1) {
+                this.pageNum = 1;
+              }
+              this.tableData = res.data.data.list;
+              this.total = res.data.data.total;
+            }
+          }
         });
     },
     //根据承揽人注册状态、工种、状态过滤分组查询
-    handleFilter() {
+    handleFilter(pageNum) {
       this.$axios
         .get(url.rosterFilter, {
           params: {
             customerId: 1,
             registerStatusS: JSON.stringify(this.filterDatas.registerStatus),
             statusS: this.filterDatas.state,
-            pageSize: 1,
+            pageSize: pageNum,
             pageNum: this.pageNum
           }
         })
         .then(res => {
           console.log(res);
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.currentPage = 1;
+              this.filterType = "filter";
+              if (pageNum === 1) {
+                this.pageNum = 1;
+              }
+              this.tableData = res.data.data.list;
+              this.total = res.data.data.total;
+            }
+          }
         });
     },
     resetFilter() {
-      this.isFilter = false;
+      this.pageNum = 1;
       this.getDataLists();
-      // this.total = this.tableData.length;
-      // this.currentPage = 1;
       (this.mobileValue = ""),
         (this.jobNumberValue = ""),
         (this.fullNameValue = "");
@@ -557,7 +573,7 @@ export default {
         this.filterDatas[key] = filters[key];
       }
       console.log(typeof this.filterDatas.registerStatus);
-      this.handleFilter();
+      this.handleFilter(1);
     },
     handleSelectionChange(val) {
       this.tableChecked = val;
@@ -577,6 +593,7 @@ export default {
           console.log(res);
           if (res.status === 200) {
             if (res.data.result === 1) {
+              this.pageNum = 1;
               this.tableData = res.data.data.list;
               this.total = res.data.data.total;
             } else {
@@ -595,7 +612,15 @@ export default {
     //改变页数
     paginationChange(currentPage) {
       this.pageNum = currentPage;
-      this.getDataLists();
+      if (this.filterType === "search") {
+        this.handleSearch(this.pageNum);
+      } else {
+        if (this.filterType === "filter") {
+          this.handleFilter(this.pageNum);
+        } else {
+          this.getDataLists();
+        }
+      }
     },
     //改变每页数据量
     handleSizeChange(size) {
