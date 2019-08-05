@@ -22,32 +22,32 @@
       </div>
       <div class="filter-container">
         <el-input
-          v-model="searchValue"
+          v-model.trim="mobileValue"
           placeholder="按手机号搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleFilter"
+          @keyup.enter.native="handleSearch"
         />
         <el-input
-          v-model="searchValue"
+          v-model.trim="jobNumberValue"
           placeholder="按工号搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleFilter"
+          @keyup.enter.native="handleSearch"
         />
         <el-input
-          v-model="searchValue"
+          v-model.trim="fullNameValue"
           placeholder="按姓名搜索"
           style="width: 200px;"
           class="filter-item"
-          @keyup.enter.native="handleFilter"
+          @keyup.enter.native="handleSearch"
         />
         <el-button-group>
           <el-button
             class="filter-item"
             type="primary"
             icon="el-icon-search"
-            @click.native="handleFilter"
+            @click.native="handleSearch"
           >搜索</el-button>
           <el-button
             class="filter-item"
@@ -85,6 +85,7 @@
         @selection-change="handleSelectionChange"
         style="width: 100%"
         v-loading="loading"
+        @filter-change="filterStatus"
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="jobNumber" label="工号"></el-table-column>
@@ -99,8 +100,8 @@
           prop="registerStatus"
           label="注册状态"
           width="120"
+          column-key="registerStatus"
           :filters="[{ text: '待注册', value: '0' }, { text: '注册失败', value: '2' }, { text: '注册成功', value: '1' }]"
-          :filter-method="filterStatus"
           filter-placement="bottom-end"
         >
           <template slot-scope="scope">
@@ -128,7 +129,7 @@
           prop="typeOfWork"
           label="工种"
           :filters="[{ text: '财务', value: '财务' }, { text: '出纳', value: '出纳' }, { text: '经理', value: '经理' }]"
-          :filter-method="filterType"
+          column-key="typeOfWork"
           filter-placement="bottom-end"
         ></el-table-column>
         <el-table-column
@@ -136,7 +137,7 @@
           width="100"
           label="状态"
           :filters="[{ text: '禁用', value: 'forbidden' }, { text: '启用', value: 'success' }]"
-          :filter-method="filterState"
+          column-key="state"
           filter-placement="bottom-end"
         >
           <template slot-scope="scope">
@@ -231,7 +232,7 @@
           <el-input v-model="editData.mobile" :disabled="!isAdd"></el-input>
         </el-form-item>
         <el-form-item label="证件类型" prop="idType" :label-width="formLabelWidth">
-          <el-input v-model="editData.idType" :disabled="!isAdd"></el-input>
+          <el-input v-model="editData.idType" disabled></el-input>
         </el-form-item>
         <el-form-item label="身份证号码" prop="idCard" :label-width="formLabelWidth">
           <el-input v-model="editData.idCard" :disabled="!isAdd"></el-input>
@@ -261,9 +262,10 @@
 </template>
 
 <script>
-import { getRosterList } from "@/api/table";
+import { getRosterList, validateId } from "@/api/table";
 import url from "@/api/api.js";
 import qs from "qs";
+import { validatePhone } from "@/utils/validate";
 export default {
   data() {
     return {
@@ -306,10 +308,12 @@ export default {
       value: 0,
       searchValue: "",
       rules: {
-        name: [
-          { required: true, message: "姓名不能为空", trigger: "change" },
-          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "change" }
-        ]
+        fullName: [
+          { required: true, message: "姓名不能为空", trigger: "blur" },
+          { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "blur" }
+        ],
+        mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
+        idCard: [{ required: true, trigger: "blur", validator: validateId }]
       },
       filterTableData: [],
       isFilter: false,
@@ -327,7 +331,15 @@ export default {
       checkedMobiles: [],
       total: -1,
       currentPage: 1,
-      loading: false
+      loading: false,
+      mobileValue: "",
+      jobNumberValue: "",
+      fullNameValue: "",
+      filterDatas: {
+        registerStatus: [],
+        state: [],
+        typeOfWork: []
+      }
     };
   },
   mounted() {
@@ -497,38 +509,55 @@ export default {
           });
         });
     },
+    //根据手机号，真实姓名，工号模糊查询
+    handleSearch() {
+      this.$axios
+        .get(url.rosterSearch, {
+          params: {
+            customerId: 1,
+            mobile: this.mobileValue,
+            jobNumber: this.jobNumberValue,
+            fullName: this.fullNameValue,
+            pageNum: 1,
+            pageSize: this.pageSize
+          }
+        })
+        .then(res => {
+          console.log(res);
+          this.tableData = res.data.data.list;
+        });
+    },
+    //根据承揽人注册状态、工种、状态过滤分组查询
     handleFilter() {
-      if (this.searchValue === "") {
-        this.isFilter = false;
-        return;
-      }
-      // this.currentPage = 1;
-      this.filterTableData = [];
-      (this.filterTableData = this.tableData.filter(data => {
-        return (
-          String(data.name).indexOf(String(this.searchValue)) > -1 ||
-          String(data.mobile).indexOf(String(this.searchValue)) > -1 ||
-          String(data.id).indexOf(String(this.searchValue)) > -1
-        );
-      })),
-        // this.total = this.filterTableData.length;
-        // this.currentChange(1);
-        (this.isFilter = true);
+      this.$axios
+        .get(url.rosterFilter, {
+          params: {
+            customerId: 1,
+            registerStatusS: JSON.stringify(this.filterDatas.registerStatus),
+            statusS: this.filterDatas.state,
+            pageSize: 1,
+            pageNum: this.pageNum
+          }
+        })
+        .then(res => {
+          console.log(res);
+        });
     },
     resetFilter() {
       this.isFilter = false;
+      this.getDataLists();
       // this.total = this.tableData.length;
       // this.currentPage = 1;
-      this.searchValue = "";
+      (this.mobileValue = ""),
+        (this.jobNumberValue = ""),
+        (this.fullNameValue = "");
     },
-    filterState(value, row) {
-      return row.state === value;
-    },
-    filterStatus(value, row) {
-      return row.registerStatus === value;
-    },
-    filterType(value, row) {
-      return row.typeOfWork === value;
+    filterStatus(filters) {
+      for (var key in filters) {
+        this.filterDatas[key] = filters[key];
+      }
+      console.log(typeof this.filterDatas.registerStatus);
+      this.handleFilter();
     },
     handleSelectionChange(val) {
       this.tableChecked = val;

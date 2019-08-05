@@ -13,6 +13,8 @@ let url = {
   rosterDelete: 'roster/delete', //花名册删除
   rosterDeleteAll: 'roster/deleteAll', //花名册全部删除
   rosterEdit: 'roster/1', //花名册编辑
+  rosterFilter: 'roster/groupRoster',
+  rosterSearch: 'roster/fuzzyRoster',
 }
 
 
