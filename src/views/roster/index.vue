@@ -181,38 +181,48 @@
       </div>
     </template>
     <el-dialog title="查看个人信息" :visible.sync="checkUserFormVisible">
-      <el-form :model="checkData">
-        <el-form-item label="工号" prop="jobNumber" :label-width="formLabelWidth">
-          <el-input v-model="checkData.jobNumber"></el-input>
-        </el-form-item>
-        <el-form-item label="姓名" prop="fullName" :label-width="formLabelWidth">
-          <el-input v-model="checkData.fullName"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号码" prop="mobile" :label-width="formLabelWidth">
-          <el-input v-model="checkData.mobile"></el-input>
-        </el-form-item>
-        <el-form-item label="证件类型" prop="idType" :label-width="formLabelWidth">
-          <el-input v-model="checkData.idType"></el-input>
-        </el-form-item>
-        <el-form-item label="身份证号码" prop="idCard" :label-width="formLabelWidth">
-          <el-input v-model="checkData.idCard"></el-input>
-        </el-form-item>
-        <el-form-item label="银行卡号" prop="bankAccount" :label-width="formLabelWidth">
-          <el-input v-model="checkData.bankAccount"></el-input>
-        </el-form-item>
-        <el-form-item label="开户行" prop="bankName" :label-width="formLabelWidth">
-          <el-input v-model="checkData.bankName"></el-input>
-        </el-form-item>
-        <el-form-item label="注册状态" prop="registerStatus" :label-width="formLabelWidth">
-          <el-input v-model="checkData.registerStatus"></el-input>
-        </el-form-item>
-        <el-form-item label="工种" prop="typeOfWork" :label-width="formLabelWidth">
-          <el-input v-model="checkData.typeOfWork"></el-input>
-        </el-form-item>
-        <el-form-item label="状态" prop="state" :label-width="formLabelWidth">
-          <el-input v-model="checkData.state"></el-input>
-        </el-form-item>
-      </el-form>
+      <div class="checkDatas">
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">工号:</span>
+          <span>{{checkData.jobNumber}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">姓名:</span>
+          <span>{{checkData.fullName}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">手机号码:</span>
+          <span>{{checkData.mobile}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">证件类型:</span>
+          <span>{{checkData.idType}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">身份证号码:</span>
+          <span>{{checkData.idCard}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">银行卡号:</span>
+          <span>{{checkData.bankAccount}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">开户行:</span>
+          <span>{{checkData.bankName}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">注册状态:</span>
+          <span>{{checkData.idCard}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">工种:</span>
+          <span>{{checkData.registerStatus}}</span>
+        </div>
+        <div class="checkDataItem">
+          <span class="checkDataItemTitle">状态:</span>
+          <span>{{checkData.state}}</span>
+        </div>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="checkUserFormVisible = false">关闭</el-button>
       </div>
@@ -280,6 +290,7 @@ export default {
         idType: "身份证",
         bankAccount: "1111",
         bankName: "1111",
+        idCard: "111",
         registerStatus: "0",
         typeOfWork: "11",
         state: ""
@@ -296,18 +307,6 @@ export default {
         typeOfWork: "",
         state: ""
       },
-      options: [
-        {
-          value: "管理员",
-          label: "管理员"
-        },
-        {
-          value: "普通用户",
-          label: "普通用户"
-        }
-      ],
-      value: 0,
-      searchValue: "",
       rules: {
         fullName: [
           { required: true, message: "姓名不能为空", trigger: "blur" },
@@ -428,16 +427,10 @@ export default {
             this.checkedMobiles.push(this.tableChecked[key].mobile);
           }
           this.$axios
-            .post(
-              url.rosterDelete,
-              // qs.stringify(
-              {
-                mobiles: this.checkedMobiles,
-                customerId: 1
-              }
-              //   { indices: false }
-              // )
-            )
+            .post(url.rosterDelete, {
+              mobiles: this.checkedMobiles,
+              customerId: 1
+            })
             .then(res => {
               console.log(res);
               if (res.status === 200) {
@@ -530,7 +523,11 @@ export default {
               }
               this.tableData = res.data.data.list;
               this.total = res.data.data.total;
+            } else {
+              this.$message.error(res.data.msg);
             }
+          } else {
+            this.$message.error("查询失败");
           }
         });
     },
@@ -559,6 +556,9 @@ export default {
               this.total = res.data.data.total;
             }
           }
+        })
+        .catch(err => {
+          console.log(err);
         });
     },
     resetFilter() {
@@ -572,7 +572,6 @@ export default {
       for (var key in filters) {
         this.filterDatas[key] = filters[key];
       }
-      console.log(typeof this.filterDatas.registerStatus);
       this.handleFilter(1);
     },
     handleSelectionChange(val) {
@@ -687,21 +686,25 @@ export default {
     },
     //确定添加用户
     addUserDataTrue() {
-      let newData = this.editData;
-      newData.customerId = 1;
-      this.$axios.post(url.rosterAdd, newData).then(res => {
-        console.log(res);
-        this.userFormVisible = false;
-        this.isAdd = false;
-        if (res.status === 200) {
-          if (res.data.result === 1) {
-            this.getDataLists();
-            this.$message.success("添加成功");
-          } else {
-            this.$message.error(res.data.msg);
-          }
-        } else {
-          this.$message.error("添加失败");
+      this.$refs["editData"].validate(valid => {
+        if (vaild) {
+          let newData = this.editData;
+          newData.customerId = 1;
+          this.$axios.post(url.rosterAdd, newData).then(res => {
+            console.log(res);
+            this.userFormVisible = false;
+            this.isAdd = false;
+            if (res.status === 200) {
+              if (res.data.result === 1) {
+                this.getDataLists();
+                this.$message.success("添加成功");
+              } else {
+                this.$message.error(res.data.msg);
+              }
+            } else {
+              this.$message.error("添加失败");
+            }
+          });
         }
       });
     },
@@ -768,6 +771,22 @@ export default {
 
   .filter-container {
     margin-bottom: 10px;
+  }
+
+  .checkDatas {
+    width: 90%;
+    font-size: 16px;
+    margin: 0 auto;
+
+    .checkDataItem {
+      line-height: 30px;
+
+      .checkDataItemTitle {
+        display: inline-block;
+        width: 30%;
+        text-align: right;
+      }
+    }
   }
 }
 </style>
