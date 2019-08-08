@@ -6,16 +6,16 @@
 
 <script>
 export default {
-  name: 'App'
-}
+  name: "App"
+};
 </script>
 
 <style lang="scss" scoped>
 body {
-    overflow: auto;
+  overflow: auto;
 }
-#app{
-  min-width:1200px
+#app {
+  min-width: 1300px;
 }
 </style>
 

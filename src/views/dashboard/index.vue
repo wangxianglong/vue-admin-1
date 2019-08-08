@@ -1,241 +1,283 @@
 <template>
-  <div class="dashboard-container">
-    <el-row :gutter="20">
-      <el-col :span="8">
-        <div class="grid-content">
-          <div class="allMoney money  bg-purple">
-            <div class="content-header">全部金额</div>
-            <div class="content-content">12345667</div>
-          </div>
-          <div class="availableMoney money bg-purple">
-            <div class="content-header">可用金额</div>
-            <div class="content-content">12345667</div>
-          </div>
-        </div>
-      </el-col>
-      <el-col :span="16">
-        <div class="grid-content bg-purple">
-            <div class="content-header">折线图</div>
-            <div class="content-content liner">12345667</div>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :span="10">  
-        <div class="grid-content bg-purple">
-            <div class="content-header">饼图</div>
-            <div class="content-content pie">12345667</div>
-        </div>
-      </el-col>
-      <el-col :span="14">
-          <div class="grid-content bg-purple">
-            <div class="content-header">柱形图图</div>
-            <div class="content-content bar">12345667</div>
-          </div>
-      </el-col>
-    </el-row>
+  <div class="dashboard">
+    <div class="notice">
+      <h1>公告</h1>
+      <p>某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某某</p>
+    </div>
+    <div class="lists">
+      <div class="list download">
+        <span class="icon">
+          <svg-icon icon-class="download" class="icon-svg" />
+        </span>
+        <span class="content">收支明细</span>
+        <span class="description">点击下载</span>
+      </div>
+      <div class="list all-money">
+        <span class="icon">
+          <svg-icon icon-class="all" class="icon-svg" />
+        </span>
+        <count-to
+          :start-val="0"
+          :end-val="allMoney"
+          :duration="2600"
+          prefix="¥"
+          decimals="2"
+          class="content"
+        />
+        <span class="description">总金额</span>
+      </div>
+      <div class="list left-money">
+        <span class="icon">
+          <svg-icon icon-class="money" class="icon-svg" />
+        </span>
+        <count-to
+          :start-val="0"
+          :end-val="leftMoney"
+          :duration="2600"
+          prefix="¥"
+          decimals="2"
+          class="content"
+        />
+        <span class="description">可用余额</span>
+      </div>
+    </div>
+    <div id="chat"></div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-
-import echarts from 'echarts'
+import echarts from "echarts";
 // 引入柱状图
-require('echarts/lib/chart/line')
-require('echarts/lib/chart/bar')
-require('echarts/lib/chart/pie')
+require("echarts/lib/chart/bar");
 // 引入提示框和标题组件
-require('echarts/lib/component/tooltip')
-require('echarts/lib/component/title')
+require("echarts/lib/component/tooltip");
+require("echarts/lib/component/title");
+import CountTo from "vue-count-to";
+
 export default {
-  name: 'Dashboard',
-  computed: {
-    ...mapGetters([
-      'name'
-    ])
-  },
+  name: "Dashboard",
   data() {
-      return {
-        chart: null
-      }
+    return {
+      allMoney: 18000000.9087,
+      leftMoney: 8000000,
+      chart: null
+    };
   },
+  components: { CountTo },
   mounted() {
-      this.initCharts()
+    this.initCharts();
+    console.log(this.chart);
   },
   methods: {
-      initCharts() {
-        this.lineChart = echarts.init(document.getElementsByClassName('liner')[0]);
-        this.pieChart = echarts.init(document.getElementsByClassName('pie')[0]);
-        this.barChart = echarts.init(document.getElementsByClassName('bar')[0]);
-        this.setOptions();
-      },
-      setOptions() {
-        this.lineChart.setOption({
-          title: {
-              text: '折线图堆叠'
-          },
-          tooltip: {
-              trigger: 'axis'
-          },
-          legend: {
-              data:['邮件营销','联盟广告','视频广告','直接访问','搜索引擎']
-          },
-          grid: {
-              left: '3%',
-              right: '4%',
-              bottom: '3%',
-              containLabel: true
-          },
-          toolbox: {
-              feature: {
-                  saveAsImage: {}
-              }
-          },
-          xAxis: {
-              type: 'category',
-              boundaryGap: false,
-              data: ['周一','周二','周三','周四','周五','周六','周日']
-          },
-          yAxis: {
-              type: 'value'
-          },
-          series: [
-              {
-                  name:'邮件营销',
-                  type:'line',
-                  stack: '总量',
-                  data:[120, 132, 101, 134, 90, 230, 210]
-              },
-              {
-                  name:'联盟广告',
-                  type:'line',
-                  stack: '总量',
-                  data:[220, 182, 191, 234, 290, 330, 310]
-              },
-              {
-                  name:'视频广告',
-                  type:'line',
-                  stack: '总量',
-                  data:[150, 232, 201, 154, 190, 330, 410]
-              },
-              {
-                  name:'直接访问',
-                  type:'line',
-                  stack: '总量',
-                  data:[320, 332, 301, 334, 390, 330, 320]
-              },
-              {
-                  name:'搜索引擎',
-                  type:'line',
-                  stack: '总量',
-                  data:[820, 932, 901, 934, 1290, 1330, 1320]
-              }
+    initCharts() {
+      this.chart = echarts.init(document.getElementById("chat"), "bar");
+      this.setOptions();
+    },
+    setOptions() {
+      this.chart.setOption({
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            // 坐标轴指示器，坐标轴触发有效
+            type: "line" // 默认为直线，可选为：'line' | 'shadow'
+          }
+        },
+        legend: {
+          data: ["收入", "支出"]
+        },
+        grid: {
+          left: "3%",
+          right: "4%",
+          bottom: "3%",
+          containLabel: true
+        },
+        xAxis: {
+          type: "category",
+          data: [
+            "一月",
+            "二月",
+            "三月",
+            "四月",
+            "五月",
+            "六月",
+            "七月",
+            "六月",
+            "七月",
+            "八月",
+            "九月",
+            "十月",
+            "十一月",
+            "十二月"
           ]
-        });
-        this.pieChart.setOption({
-          tooltip: {
-              trigger: 'item',
-              formatter: "{a} <br/>{b}: {c} ({d}%)"
-          },
-          legend: {
-              orient: 'vertical',
-              x: 'left',
-              data:['直接访问','邮件营销','联盟广告','视频广告','搜索引擎']
-          },
-          series: [
-              {
-                  name:'访问来源',
-                  type:'pie',
-                  radius: ['50%', '70%'],
-                  avoidLabelOverlap: false,
-                  label: {
-                      normal: {
-                          show: false,
-                          position: 'center'
-                      },
-                      emphasis: {
-                          show: true,
-                          textStyle: {
-                              fontSize: '30',
-                              fontWeight: 'bold'
-                          }
-                      }
-                  },
-                  labelLine: {
-                      normal: {
-                          show: false
-                      }
-                  },
-                  data:[
-                      {value:335, name:'直接访问'},
-                      {value:310, name:'邮件营销'},
-                      {value:234, name:'联盟广告'},
-                      {value:135, name:'视频广告'},
-                      {value:1548, name:'搜索引擎'}
-                  ]
+        },
+        yAxis: {
+          type: "value"
+        },
+        series: [
+          {
+            name: "收入",
+            type: "bar",
+            stack: "总量",
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight"
               }
-          ]
-        });
-        this.barChart.setOption({
-          xAxis: {
-              type: 'category',
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            },
+            data: [320, 302, 301, 334, 390, 330, 320, 301, 334, 390, 330, 320]
           },
-          yAxis: {
-              type: 'value'
-          },
-          series: [{
-              data: [120, 200, 150, 80, 70, 110, 130],
-              type: 'bar'
-          }]
-      })
-      }
+          {
+            name: "支出",
+            type: "bar",
+            stack: "总量",
+            label: {
+              normal: {
+                show: true,
+                position: "insideRight"
+              }
+            },
+            data: [-120, 132, 101, 134, 90, 230, 210, 101, 134, 90, 230, 210]
+          }
+        ]
+      });
+    }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
-
-.el-row {
-  margin-bottom: 20px;
-  &:last-child {
-    margin-bottom: 0;
+$blue: #4d7cfe;
+$lightblue: #e5ecff;
+$orange: #ffab2b;
+$lightorange: #fff3e0;
+$green: #6dd230;
+$lightgreen: #eaf8e1;
+.dashboard {
+  background-color: #f9f9f9;
+  overflow: hidden;
+  .notice {
+    width: 1619px;
+    height: 132px;
+    background: #ffffff;
+    padding-top: 10px;
+    padding-left: 30px;
+    margin: 30px 0;
   }
-}
-.el-col {
-  border-radius: 4px;
-}
-.bg-purple {
-  background: #e5e9f2;
-}
-.grid-content {
-  border-radius: 4px;
-  height: 360px;
-}
-.money{
-  height:170px;
-}
-.allMoney{
-  margin-bottom: 20px;
-}
-.content-header{
-  width:100%;
-  height:35px;
-  border-left: 4px solid red;
-  padding-left: 15px;
-  display:flex;
-  align-items: center;  
-}
-.money .content-content{
-  display:flex;
-  align-items: center;  
-  justify-content: center;
-  font-size:50px;
-  color:cornflowerblue;
-}
-.content-content{
-  height:calc(90%);
-  width: 100%;
+  .lists {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    .list {
+      width: 400px;
+      height: 130px;
+      background: #ffffff;
+      position: relative;
+
+      .icon::before {
+        content: "";
+        display: block;
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        z-index: 99;
+        position: relative;
+        top: -8px;
+        left: -8px;
+      }
+
+      .icon {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        background: $blue;
+        border-radius: 25px;
+        text-align: center;
+        position: relative;
+        top: 43px;
+        left: 29px;
+        z-index: 999;
+        animation: all 0.1s linear;
+
+        .icon-svg {
+          height: 24px;
+          width: 24px;
+          position: relative;
+          bottom: 52px;
+          z-index: 9999;
+          fill: #fff;
+        }
+      }
+      .content {
+        position: absolute;
+        left: 104px;
+        bottom: 55px;
+        font-size: 26px;
+        color: #252631;
+      }
+      .description {
+        position: absolute;
+        left: 104px;
+        bottom: 37px;
+        font-size: 14px;
+        color: #98a9bc;
+      }
+    }
+    .download {
+      .icon {
+        cursor: pointer;
+        &::before {
+          border: 8px solid $lightblue;
+        }
+        &:hover {
+          background: $lightblue;
+          .icon-svg {
+            fill: $blue;
+          }
+          &::before {
+            border: 8px solid $blue;
+          }
+        }
+      }
+    }
+    .all-money {
+      .icon {
+        background: $orange;
+        &::before {
+          border: 8px solid $lightorange;
+        }
+        &:hover {
+          background: $lightorange;
+          .icon-svg {
+            fill: $orange;
+          }
+          &::before {
+            border: 8px solid $orange;
+          }
+        }
+      }
+    }
+    .left-money {
+      .icon {
+        background: $green;
+        &::before {
+          border: 8px solid $lightgreen;
+        }
+        &:hover {
+          background: $lightgreen;
+          .icon-svg {
+            fill: $green;
+          }
+          &::before {
+            border: 8px solid $green;
+          }
+        }
+      }
+    }
+  }
+  #chat {
+    width: 100%;
+    height: 647px;
+  }
 }
 </style>

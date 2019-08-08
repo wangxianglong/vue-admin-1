@@ -191,7 +191,8 @@ export default {
       total: 0,
       pagesize: 10,
       currentPage: 1,
-      loading: true
+      loading: true,
+      customerId: 1
     };
   },
   // created() {
@@ -205,6 +206,7 @@ export default {
     this.$axios
       .get(url.userLists, {
         params: {
+          customerId: this.customerId,
           pageNum: 1,
           pageSize: 10
         }
