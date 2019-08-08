@@ -13,7 +13,7 @@ export function validatePhone(rule, value, callback) {
     callback(new Error('手机号不能为空'))
   } else {
     setTimeout(() => {
-      if (!(/^1[3456789]\d{9}$/.test(value))) {
+      if (!(/^((\+|00)86)?1\d{10}$/.test(value))) {
         callback(new Error('请输入正确的手机号'))
       } else {
         callback()
@@ -38,19 +38,6 @@ export function validatePassword(rule, value, callback) {
   }
 }
 
-export function validateNewPassword(rule, value, callback) {
-  if (value.length == 0) {
-    callback(new Error('请输入新密码'))
-  } else {
-    setTimeout(() => {
-      if (!(/^\w{6,16}$/.test(value))) {
-        callback(new Error('密码位数6~16之间，只能包含字母、数字和下划线'))
-      } else {
-        callback()
-      }
-    }, 500)
-  }
-}
 
 //验证短信验证码
 export function validatePasswordNote(rule, value, callback) {
@@ -104,7 +91,7 @@ export function validateId(rule, value, callback) {
     callback(new Error('身份证不能为空'))
   } else {
     setTimeout(() => {
-      var reg = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+      var reg = /(^\d{8}(0\d|10|11|12)([0-2]\d|30|31)\d{3}$)|(^\d{6}(18|19|20)\d{2}(0\d|10|11|12)([0-2]\d|30|31)\d{3}(\d|X|x)$)/;
       if (reg.test(value) === false) {
         callback(new Error("身份证输入不合法"))
       } else {

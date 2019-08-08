@@ -30,11 +30,10 @@ import Layout from '@/layout'
  * a base page that does not have permission requirements
  * all roles can be accessed
  */
-export const constantRoutes = [
-  {
+export const constantRoutes = [{
     path: '/login',
     component: () => import('@/views/login/index'),
-    name:'login',
+    name: 'login',
     hidden: true
   },
   {
@@ -50,34 +49,52 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '首页', icon: 'dashboard' }
+      meta: {
+        title: '首页',
+        icon: 'dashboard'
+      }
     }]
   },
 
   {
     path: '/table',
     component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: '系统用户管理', icon: 'table' }
+    children: [{
+      path: 'index',
+      name: 'Table',
+      component: () => import('@/views/table/index'),
+      meta: {
+        title: '系统用户管理',
+        icon: 'table'
       }
-    ]
+    }]
   },
   {
     path: '/roster',
     component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Roster',
-        component: () => import('@/views/roster/index'),
-        meta: { title: '花名册管理', icon: 'table' }
+    children: [{
+      path: 'index',
+      name: 'Roster',
+      component: () => import('@/views/roster/index'),
+      meta: {
+        title: '花名册管理',
+        icon: 'table'
       }
-    ]
+    }]
   },
+  // {
+  //   path: '/payment',
+  //   component: Layout,
+  //   children: [{
+  //     path: 'index',
+  //     name: 'Payment',
+  //     component: () => import('@/views/payment/index'),
+  //     meta: {
+  //       title: '支付明细管理',
+  //       icon: 'table'
+  //     }
+  //   }]
+  // },
 
   // {
   //   path: '/form',
@@ -166,12 +183,18 @@ export const constantRoutes = [
     hidden: true
   },
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  {
+    path: '*',
+    redirect: '/404',
+    hidden: true
+  }
 ]
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: () => ({
+    y: 0
+  }),
   routes: constantRoutes
 })
 

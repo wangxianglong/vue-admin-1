@@ -194,26 +194,26 @@ export default {
       loading: true
     };
   },
-  created() {
-    getList().then(res => {
-      this.tableData = res.data.items;
-      this.total = res.data.total;
-      this.loading = false;
-    });
-  },
+  // created() {
+  //   getList().then(res => {
+  //     this.tableData = res.data.items;
+  //     this.total = res.data.total;
+  //     this.loading = false;
+  //   });
+  // },
   mounted() {
-    // this.$axios
-    //   .get(url.userLists, {
-    //     params: {
-    //       pageNum: 1,
-    //       pageSize: 10
-    //     }
-    //   })
-    //   .then(res => {
-    //     console.log(res);
-    //     this.tableData = res.data.data.list;
-    //     this.loading = false;
-    //   });
+    this.$axios
+      .get(url.userLists, {
+        params: {
+          pageNum: 1,
+          pageSize: 10
+        }
+      })
+      .then(res => {
+        console.log(res);
+        this.tableData = res.data.data.list;
+        this.loading = false;
+      });
   },
   methods: {
     //禁用、启用用户
