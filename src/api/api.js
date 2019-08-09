@@ -3,10 +3,10 @@ let url = {
   userGetCode: '/user/getCode', //获取验证码
   userCodeLogin: '/user/codeLogin', //手机号码验证码登录
   userForgetPswd: '/user/forgetPswd', //忘记密码找回
-  userLists: '/user', //查询B端职员
+  userLists: '/user/findUser', //查询B端职员
   userAdd: '/user', //添加新用户
   userForbidden: 'user/2', //禁用用户
-  userList: 'user/1', //查看用户
+  userEdit: 'user/1', //编辑用户
   rosterLists: 'roster', //花名册查询
   rosterAdd: 'roster', //花名册添加
   rosterImportExcel: 'roster/importExcel', //导入exel文件

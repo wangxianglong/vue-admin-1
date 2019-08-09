@@ -564,6 +564,7 @@ export default {
               }
               this.tableData = res.data.data.list;
               this.total = res.data.data.total;
+              this.$message.success("查询成功");
             } else {
               this.$message.error(res.data.msg);
             }
@@ -606,6 +607,7 @@ export default {
     //重置
     resetFilter() {
       this.pageNum = 1;
+      this.currentPage = 1;
       this.getDataLists();
       (this.mobileValue = ""),
         (this.jobNumberValue = ""),
@@ -653,7 +655,7 @@ export default {
           }
           this.loading = false;
         })
-        .catch(erroe => {
+        .catch(error => {
           this.$message.error("获取数据出错！");
           this.loading = false;
         });

@@ -6,14 +6,14 @@
         placeholder="按姓名搜索"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="handleFilter"
+        @keyup.enter.native="handleFilter(1)"
       />
       <el-input
         v-model="searchValue.byPhone"
         placeholder="按手机号码搜索"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="handleFilter"
+        @keyup.enter.native="handleFilter(1)"
       />
       <el-select v-model="searchValue.byIdentity" placeholder="按角色搜索">
         <el-option
@@ -23,75 +23,67 @@
           :value="item.value"
         ></el-option>
       </el-select>
-      <el-button-group>
-        <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-search"
-          @click.native="handleFilter"
-        >搜索</el-button>
-        <el-button
-          class="filter-item"
-          type="primary"
-          icon="el-icon-share"
-          @click.native="resetFilter"
-        >重置</el-button>
-      </el-button-group>
       <el-button
         class="filter-item"
-        style="margin-left: 10px;"
         type="primary"
-        icon="el-icon-edit"
-        @click="dataCreate"
+        @click.native="handleFilter(1)"
+        style="margin-left: 23px"
+      >搜索</el-button>
+      <el-button
+        class="filter-item"
+        type="primary"
+        @click.native="resetFilter"
+        style="margin-left: 10px"
+      >重置</el-button>
+      <el-button
+        class="filter-item"
+        style="margin-right: 30px; float:right"
+        type="primary"
+        @click="addUserData"
       >添加</el-button>
     </div>
     <el-table
-      :data="isFilter? filterTableData.slice((currentPage-1)*pagesize,currentPage*pagesize) : tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
+      :data="tableData"
       stripe
       style="width: 100%"
       v-loading="loading"
+      :header-cell-style="{background:'#E1E1E1'}"
     >
-      <el-table-column prop="customerId" label="序号"></el-table-column>
+      <!-- <el-table-column prop="customerId" label="序号"></el-table-column> -->
       <el-table-column prop="fullName" label="姓名"></el-table-column>
       <el-table-column prop="mobile" label="手机号码"></el-table-column>
       <el-table-column prop="eMail" label="邮箱"></el-table-column>
-      <el-table-column prop="roles" label="角色"></el-table-column>
-      <el-table-column prop="isForbidden" label="状态">
+      <el-table-column prop="customerSysUserInfos.roles" label="角色"></el-table-column>
+      <el-table-column prop="customerSysUserInfos.isForbidden" label="状态">
         <template slot-scope="scope">
           <el-button
-            v-if="scope.row.isForbidden === 0"
+            v-if="scope.row.customerSysUserInfos.isForbidden === 0"
             @click.native.prevent="stateChange(scope.row)"
             size="mini"
             type="primary"
           >正常</el-button>
           <el-button
-            v-if="scope.row.isForbidden === 1"
+            v-if="scope.row.customerSysUserInfos.isForbidden === 1"
             @click.native.prevent="stateChange(scope.row)"
             size="mini"
             type="danger"
           >禁用</el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="createDate" label="创建时间"></el-table-column>
-      <el-table-column prop="lastDate" label="最后操作时间"></el-table-column>
-      <el-table-column prop="pswd" label="登录密码"></el-table-column>
-      <el-table-column width="180">
+      <el-table-column prop="customerSysUserInfos.createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="customerSysUserInfos.lastDate" label="最后操作时间"></el-table-column>
+      <el-table-column prop="customerSysUserInfos.pswd" label="登录密码"></el-table-column>
+      <el-table-column width="180" label="操作">
         <template slot-scope="scope">
           <el-button
-            @click.native.prevent="dataChange(scope.row,scope.$index)"
+            @click.native.prevent="editUserData(scope.row,scope.$index)"
             size="mini"
             type="primary"
           >编辑</el-button>
-          <el-button
-            @click.native.prevent="dataDelete(scope.$index,tableData)"
-            size="mini"
-            type="danger"
-          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <el-pagination
-      background
       layout="prev, pager, next"
       :total="total"
       :current-page="currentPage"
@@ -101,6 +93,7 @@
       :title="isAdd?'添加信息':'修改信息'"
       :visible.sync="dialogFormVisible"
       :before-close="cancel"
+      v-dialogDrag
     >
       <el-form :model="editData" :rules="rules" ref="editData">
         <el-form-item label="姓名" prop="fullName">
@@ -112,7 +105,7 @@
         <el-form-item label="邮箱" prop="eMail">
           <el-input v-model="editData.eMail"></el-input>
         </el-form-item>
-        <el-form-item label="角色" prop="roles" class="form-identity">
+        <el-form-item label="角色" prop="customerSysUserInfos.roles" class="form-identity">
           <el-select v-model="value" placeholder="请选择">
             <el-option
               v-for="item in options"
@@ -122,13 +115,13 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="登录密码" prop="pswd">
-          <el-input v-model="editData.pswd"></el-input>
+        <el-form-item label="登录密码" prop="customerSysUserInfos.pswd">
+          <el-input v-model="editData.customerSysUserInfos.pswd"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel()">取 消</el-button>
-        <el-button type="primary" @click="isAdd? dataCreated():dataChanged()">确 定</el-button>
+        <el-button type="primary" @click="isAdd? addUserDataTrue():editUserDataTrue()">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -155,10 +148,12 @@ export default {
         fullName: "12344",
         mobile: "15757116573",
         eMail: "cmy@qq.com",
-        roles: "",
-        createDate: "",
-        lastDate: "",
-        pswd: "123456"
+        customerSysUserInfos: {
+          roles: "",
+          createTime: "",
+          lastTime: "",
+          pswd: "123456"
+        }
       },
       searchValue: {
         byName: "",
@@ -183,41 +178,54 @@ export default {
         ],
         mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
         eMail: [{ required: true, trigger: "blur", validator: validateMail }],
-        pswd: [{ required: true, trigger: "blur", validator: validatePassword }]
+        "customerSysUserInfos.pswd": [
+          { required: true, trigger: "blur", validator: validatePassword }
+        ]
       },
-      filterTableData: [],
       isFilter: false,
       isAdd: false,
       total: 0,
-      pagesize: 10,
+      pageNum: 1,
+      pageSize: 10,
       currentPage: 1,
       loading: true,
       customerId: 1
     };
   },
-  // created() {
-  //   getList().then(res => {
-  //     this.tableData = res.data.items;
-  //     this.total = res.data.total;
-  //     this.loading = false;
-  //   });
-  // },
   mounted() {
-    this.$axios
-      .get(url.userLists, {
-        params: {
-          customerId: this.customerId,
-          pageNum: 1,
-          pageSize: 10
-        }
-      })
-      .then(res => {
-        console.log(res);
-        this.tableData = res.data.data.list;
-        this.loading = false;
-      });
+    this.getUserLists();
   },
   methods: {
+    //获取数据列表
+    getUserLists() {
+      this.loading = true;
+      this.$axios
+        .post(url.userLists, {
+          // params: {
+          customerId: this.customerId,
+          pageNum: this.pageNum,
+          pageSize: this.pageSize
+          // }
+        })
+        .then(res => {
+          console.log(res);
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.tableData = res.data.data.list;
+              this.total = res.data.data.total;
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          } else {
+            this.$message.error("获取数据出错！");
+          }
+          this.loading = false;
+        })
+        .catch(error => {
+          this.$message.error("获取数据出错！");
+          this.loading = false;
+        });
+    },
     //禁用、启用用户
     stateChange(row) {
       this.$confirm("此操作将改变用户状态, 是否继续?", "提示", {
@@ -228,17 +236,27 @@ export default {
         .then(() => {
           this.$axios
             .post(url.userForbidden, {
-              customerId: 1,
-              isForbidden: row.isForbidden
+              customerId: this.customerId,
+              isForbidden: 1 - row.customerSysUserInfos.isForbidden,
+              mobile: row.mobile
             })
             .then(res => {
               console.log(res);
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  this.$message({
+                    type: "success",
+                    message: "修改成功!"
+                  });
+                  row.customerSysUserInfos.isForbidden =
+                    1 - row.customerSysUserInfos.isForbidden;
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("修改失败");
+              }
             });
-          this.$message({
-            type: "success",
-            message: "修改成功!"
-          });
-          row.isForbidden = row.isForbidden === 0 ? 1 : 0;
         })
         .catch(() => {
           this.$message({
@@ -247,44 +265,44 @@ export default {
           });
         });
     },
-    //删除用户
-    dataDelete(index, rows) {
-      this.$confirm("此操作将删除用户, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
-          rows.splice(index, 1);
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除"
-          });
-        });
-    },
     //编辑弹框
-    dataChange(row, index) {
+    editUserData(row, index) {
       this.editRowIndex = index;
-      let rowData = row;
-      this.editData = JSON.parse(JSON.stringify(rowData));
-      this.value = rowData.roles;
+      // let rowData = row;
+      this.editData = JSON.parse(JSON.stringify(row));
+      this.value = row.customerSysUserInfos.roles;
       this.dialogFormVisible = true;
     },
     //编辑修改
-    dataChanged() {
+    editUserDataTrue() {
       this.$refs["editData"].validate(valid => {
         if (valid) {
-          this.tableData[this.editRowIndex] = JSON.parse(
-            JSON.stringify(this.editData)
-          );
-          this.tableData[this.editRowIndex]["roles"] = this.value;
-          this.cancel();
+          this.$axios
+            .post(url.rosterEdit, {
+              mobile: this.editData.mobile,
+              customerId: this.customerId,
+              fullName: this.editData.fullName,
+              eMail: this.editData.eMail,
+              roles: this.editData.customerSysUserInfos.roles
+            })
+            .then(res => {
+              console.log(res);
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  this.tableData[this.editRowIndex] = JSON.parse(
+                    JSON.stringify(this.editData)
+                  );
+                  this.tableData[this.editRowIndex][
+                    "customerSysUserInfos.roles"
+                  ] = this.value;
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("编辑失败");
+              }
+              this.cancel();
+            });
         }
       });
     },
@@ -298,57 +316,101 @@ export default {
       this.$refs["editData"].clearValidate();
     },
     //模糊字段查询
-    handleFilter() {
+    handleFilter(pageNum) {
       if (
         this.searchValue.byName === "" &&
         this.searchValue.byPhone === "" &&
         this.searchValue.byIdentity === ""
       ) {
+        this.getUserLists();
         this.isFilter = false;
         return;
       }
-      this.currentPage = 1;
-      this.filterTableData = [];
-      (this.filterTableData = this.tableData.filter(data => {
-        return (
-          String(data.fullName).indexOf(String(this.searchValue.byName)) > -1 &&
-          String(data.mobile).indexOf(String(this.searchValue.byPhone)) > -1 &&
-          String(data.roles).indexOf(String(this.searchValue.byIdentity)) > -1
-        );
-      })),
-        (this.total = this.filterTableData.length);
-      this.currentChange(1);
-      this.isFilter = true;
+      this.loading = true;
+      this.$axios
+        .post(url.userLists, {
+          // params: {
+          mobile: this.searchValue.byPhone,
+          fullName: this.searchValue.byName,
+          roles: this.searchValue.byIdentity,
+          customerId: this.customerId,
+          pageNum: pageNum,
+          pageSize: this.pageSize
+          // }
+        })
+        .then(res => {
+          console.log(res);
+          if (res.status === 200) {
+            if (res.data.result === 1) {
+              this.isFilter = true;
+              if (pageNum === 1) {
+                this.pageNum = 1;
+                this.currentPage = 1;
+              }
+              this.tableData = res.data.data.list;
+              this.total = res.data.data.total;
+              this.$message.success("查询成功");
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          } else {
+            this.$message.error("查询出错！");
+          }
+          this.loading = false;
+        })
+        .catch(error => {
+          this.$message.error("查询出错！");
+          this.loading = false;
+        });
     },
     //重置查询
     resetFilter() {
       this.isFilter = false;
-      this.total = this.tableData.length;
       this.currentPage = 1;
+      this.pageNum = 1;
+      this.getUserLists();
       this.searchValue.byName = "";
       this.searchValue.byPhone = "";
       this.searchValue.byIdentity = "";
     },
-    //新建用户弹框
-    dataCreate() {
+    //添加用户
+    addUserData() {
       this.isAdd = true;
       this.dialogFormVisible = true;
       this.value = "管理员";
     },
-    //新建用户修改
-    dataCreated(editData) {
+    //确定添加用户
+    addUserDataTrue(editData) {
       this.$refs["editData"].validate(valid => {
         if (valid) {
           let newData = this.editData;
-          newData.roles = this.value;
-          newData.createDate = dateToString(new Date());
-          newData.lastDate = dateToString(new Date());
-          newData.isForbidden = 0;
-          this.tableData.push(JSON.parse(JSON.stringify(newData)));
-          this.total++;
-          this.$axios.post(url.userAdd, newData).then(res => {
-            console.log(res);
-          });
+          newData.customerSysUserInfos.roles = this.value;
+          newData.customerSysUserInfos.createTime = dateToString(new Date());
+          newData.customerSysUserInfos.lastTime = dateToString(new Date());
+          newData.customerSysUserInfos.isForbidden = 0;
+          newData.customerId = this.customerId;
+          this.$axios
+            .post(url.userAdd, newData)
+            .then(res => {
+              if (res.status === 200) {
+                if (res.data.result === 1) {
+                  console.log(res);
+                  this.$message.success("添加成功");
+                  if (this.isFilter) {
+                    this.handleFilter(this.pageNum);
+                  } else {
+                    this.getUserLists();
+                  }
+                } else {
+                  this.$message.error(res.data.msg);
+                }
+              } else {
+                this.$message.error("添加失败");
+              }
+            })
+            .catch(error => {
+              this.$message.error("添加失败");
+            });
           this.dialogFormVisible = false;
           this.isAdd = false;
         }
@@ -356,23 +418,46 @@ export default {
     },
     //换页
     currentChange(currentPage) {
-      this.currentPage = currentPage;
+      this.pageNum = currentPage;
+      if (this.isFilter) {
+        this.handleFilter(this.pageNum);
+      } else {
+        this.getUserLists();
+      }
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.filter-container {
-  height: 40px;
-  .el-button {
-    height: 40px;
+.app-container {
+  padding: 0;
+  .filter-container {
+    height: 100px;
+    background: #f9f9f9;
+    padding-top: 30px;
+    padding-left: 30px;
+    .el-button {
+      height: 40px;
+    }
+  }
+  /deep/.el-pager li {
+    border: 1px solid #a9a9a9;
+    border-radius: 3px;
+    margin: 0 5px;
+  }
+
+  /deep/.el-pager li.active {
+    background: #0091ff;
+    color: #ffffff;
+    border: 1px solid #0091ff;
   }
 }
-.el-form-item {
-  margin-bottom: 10px;
-}
-.form-identity {
-  margin-top: 20px;
-}
+
+// .el-form-item {
+//   margin-bottom: 10px;
+// }
+// .form-identity {
+//   margin-top: 20px;
+// }
 </style>

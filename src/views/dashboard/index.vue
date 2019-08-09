@@ -21,7 +21,7 @@
           :end-val="allMoney"
           :duration="2600"
           prefix="¥"
-          decimals="2"
+          :decimals="2"
           class="content"
         />
         <span class="description">总金额</span>
@@ -35,7 +35,7 @@
           :end-val="leftMoney"
           :duration="2600"
           prefix="¥"
-          decimals="2"
+          :decimals="2"
           class="content"
         />
         <span class="description">可用余额</span>
