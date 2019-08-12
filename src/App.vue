@@ -15,7 +15,7 @@ body {
   overflow: auto;
 }
 #app {
-  min-width: 1300px;
+  min-width: 1350px;
 }
 </style>
 

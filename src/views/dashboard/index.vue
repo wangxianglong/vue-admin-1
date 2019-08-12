@@ -124,6 +124,7 @@ export default {
                 position: "insideRight"
               }
             },
+            color: "#0091FF",
             data: [320, 302, 301, 334, 390, 330, 320, 301, 334, 390, 330, 320]
           },
           {
@@ -136,6 +137,7 @@ export default {
                 position: "insideRight"
               }
             },
+            color: "#BBDEFF",
             data: [-120, 132, 101, 134, 90, 230, 210, 101, 134, 90, 230, 210]
           }
         ]

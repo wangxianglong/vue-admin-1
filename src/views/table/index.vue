@@ -70,9 +70,17 @@
           >禁用</el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="customerSysUserInfos.createTime" label="创建时间"></el-table-column>
-      <el-table-column prop="customerSysUserInfos.lastDate" label="最后操作时间"></el-table-column>
-      <el-table-column prop="customerSysUserInfos.pswd" label="登录密码"></el-table-column>
+      <el-table-column prop="customerSysUserInfos.createTime" label="创建时间" width="180px">
+        <template slot-scope="scope">
+          <p>{{scope.row.customerSysUserInfos.createTime | renderTime}}</p>
+        </template>
+      </el-table-column>
+      <el-table-column prop="customerSysUserInfos.lastOperateTime" label="最后操作时间" width="180px">
+        <template slot-scope="scope">
+          <p>{{scope.row.customerSysUserInfos.lastOperateTime | renderTime}}</p>
+        </template>
+      </el-table-column>
+      <el-table-column prop="pswd" label="登录密码"></el-table-column>
       <el-table-column width="180" label="操作">
         <template slot-scope="scope">
           <el-button
@@ -84,10 +92,14 @@
       </el-table-column>
     </el-table>
     <el-pagination
-      layout="prev, pager, next"
+      layout="sizes,prev, pager, next"
       :total="total"
-      :current-page="currentPage"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="10"
+      @size-change="handleSizeChange"
+      :current-page.sync="currentPage"
       @current-change="currentChange"
+      class="pagination"
     ></el-pagination>
     <el-dialog
       :title="isAdd?'添加信息':'修改信息'"
@@ -115,8 +127,8 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="登录密码" prop="customerSysUserInfos.pswd">
-          <el-input v-model="editData.customerSysUserInfos.pswd"></el-input>
+        <el-form-item label="登录密码" prop="pswd">
+          <el-input v-model="editData.pswd"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -148,11 +160,11 @@ export default {
         fullName: "12344",
         mobile: "15757116573",
         eMail: "cmy@qq.com",
+        pswd: "123456",
         customerSysUserInfos: {
           roles: "",
           createTime: "",
-          lastTime: "",
-          pswd: "123456"
+          lastOperateTime: ""
         }
       },
       searchValue: {
@@ -178,9 +190,7 @@ export default {
         ],
         mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
         eMail: [{ required: true, trigger: "blur", validator: validateMail }],
-        "customerSysUserInfos.pswd": [
-          { required: true, trigger: "blur", validator: validatePassword }
-        ]
+        pswd: [{ required: true, trigger: "blur", validator: validatePassword }]
       },
       isFilter: false,
       isAdd: false,
@@ -200,12 +210,12 @@ export default {
     getUserLists() {
       this.loading = true;
       this.$axios
-        .post(url.userLists, {
-          // params: {
-          customerId: this.customerId,
-          pageNum: this.pageNum,
-          pageSize: this.pageSize
-          // }
+        .get(url.userLists, {
+          params: {
+            customerId: this.customerId,
+            pageNum: this.pageNum,
+            pageSize: this.pageSize
+          }
         })
         .then(res => {
           console.log(res);
@@ -244,10 +254,7 @@ export default {
               console.log(res);
               if (res.status === 200) {
                 if (res.data.result === 1) {
-                  this.$message({
-                    type: "success",
-                    message: "修改成功!"
-                  });
+                  this.$message.success("修改成功!");
                   row.customerSysUserInfos.isForbidden =
                     1 - row.customerSysUserInfos.isForbidden;
                 } else {
@@ -265,20 +272,19 @@ export default {
           });
         });
     },
-    //编辑弹框
+    //编辑用户
     editUserData(row, index) {
       this.editRowIndex = index;
-      // let rowData = row;
       this.editData = JSON.parse(JSON.stringify(row));
       this.value = row.customerSysUserInfos.roles;
       this.dialogFormVisible = true;
     },
-    //编辑修改
+    //编辑用户确认
     editUserDataTrue() {
       this.$refs["editData"].validate(valid => {
         if (valid) {
           this.$axios
-            .post(url.rosterEdit, {
+            .post(url.userEdit, {
               mobile: this.editData.mobile,
               customerId: this.customerId,
               fullName: this.editData.fullName,
@@ -289,12 +295,13 @@ export default {
               console.log(res);
               if (res.status === 200) {
                 if (res.data.result === 1) {
+                  this.$message.success("编辑成功");
                   this.tableData[this.editRowIndex] = JSON.parse(
                     JSON.stringify(this.editData)
                   );
-                  this.tableData[this.editRowIndex][
-                    "customerSysUserInfos.roles"
-                  ] = this.value;
+                  this.tableData[
+                    this.editRowIndex
+                  ].customerSysUserInfos.roles = this.value;
                 } else {
                   this.$message.error(res.data.msg);
                 }
@@ -328,15 +335,15 @@ export default {
       }
       this.loading = true;
       this.$axios
-        .post(url.userLists, {
-          // params: {
-          mobile: this.searchValue.byPhone,
-          fullName: this.searchValue.byName,
-          roles: this.searchValue.byIdentity,
-          customerId: this.customerId,
-          pageNum: pageNum,
-          pageSize: this.pageSize
-          // }
+        .get(url.userLists, {
+          params: {
+            mobile: this.searchValue.byPhone,
+            fullName: this.searchValue.byName,
+            roles: this.searchValue.byIdentity,
+            customerId: this.customerId,
+            pageNum: pageNum,
+            pageSize: this.pageSize
+          }
         })
         .then(res => {
           console.log(res);
@@ -349,7 +356,6 @@ export default {
               }
               this.tableData = res.data.data.list;
               this.total = res.data.data.total;
-              this.$message.success("查询成功");
             } else {
               this.$message.error(res.data.msg);
             }
@@ -384,10 +390,8 @@ export default {
       this.$refs["editData"].validate(valid => {
         if (valid) {
           let newData = this.editData;
-          newData.customerSysUserInfos.roles = this.value;
-          newData.customerSysUserInfos.createTime = dateToString(new Date());
-          newData.customerSysUserInfos.lastTime = dateToString(new Date());
-          newData.customerSysUserInfos.isForbidden = 0;
+          delete newData["customerSysUserInfos"];
+          newData.roles = this.value;
           newData.customerId = this.customerId;
           this.$axios
             .post(url.userAdd, newData)
@@ -424,6 +428,26 @@ export default {
       } else {
         this.getUserLists();
       }
+    },
+    //改变每页数据量
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.pageNum = 1;
+      this.currentPage = 1;
+      if (this.isFilter) {
+        this.handleFilter(this.pageNum);
+      } else {
+        this.getUserLists();
+      }
+    }
+  },
+  filters: {
+    renderTime(date) {
+      var dateee = new Date(date).toJSON();
+      return new Date(+new Date(dateee) + 8 * 3600 * 1000)
+        .toISOString()
+        .replace(/T/g, " ")
+        .replace(/\.[\d]{3}Z/, "");
     }
   }
 };
@@ -440,6 +464,10 @@ export default {
     .el-button {
       height: 40px;
     }
+  }
+  .pagination {
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
   /deep/.el-pager li {
     border: 1px solid #a9a9a9;

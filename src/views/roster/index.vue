@@ -677,7 +677,16 @@ export default {
     handleSizeChange(size) {
       this.pageSize = size;
       this.pageNum = 1;
-      this.getDataLists();
+      this.currentPage = 1;
+      if (this.filterType === "search") {
+        this.handleSearch(this.pageNum);
+      } else {
+        if (this.filterType === "filter") {
+          this.handleFilter(this.pageNum);
+        } else {
+          this.getDataLists();
+        }
+      }
     },
     //上传文件
     beforeUpload(file) {
