@@ -693,10 +693,18 @@ export default {
       var testmsg = file.name.substring(file.name.lastIndexOf(".") + 1);
       const extension = testmsg === "xls";
       const extension2 = testmsg === "xlsx";
+      const xlsName = file.name.substring(0, file.name.lastIndexOf("."));
       const isLt5M = file.size / 1024 / 1024 < 5;
       if (!extension && !extension2) {
         this.$message({
           message: "上传文件只能是 xls、xlsx格式!",
+          type: "warning"
+        });
+        return false;
+      }
+      if (xlsName.length > 100) {
+        this.$message({
+          message: "上传文件名不能超过100个字!",
           type: "warning"
         });
         return false;

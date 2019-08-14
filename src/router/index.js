@@ -82,32 +82,19 @@ export const constantRoutes = [{
       }
     }]
   },
-  {
-    path: '/payment',
-    component: Layout,
-    children: [{
-      path: 'index',
-      name: 'Payment',
-      component: () => import('@/views/payment/index'),
-      meta: {
-        title: '支付明细管理',
-        icon: 'table'
-      }
-    }]
-  },
-  {
-    path: '/agreement',
-    component: Layout,
-    children: [{
-      path: 'agreement',
-      name: 'Agreement',
-      component: () => import('@/views/agreement/index'),
-      meta: {
-        title: '电签合同管理',
-        icon: 'form'
-      }
-    }]
-  },
+  // {
+  //   path: '/agreement',
+  //   component: Layout,
+  //   children: [{
+  //     path: 'agreement',
+  //     name: 'Agreement',
+  //     component: () => import('@/views/agreement/index'),
+  //     meta: {
+  //       title: '电签合同管理',
+  //       icon: 'form'
+  //     }
+  //   }]
+  // },
   {
     path: '/pay',
     component: Layout,
