@@ -38,12 +38,12 @@
         @keyup.enter.native="handleSearch(1)"
       />
       <el-date-picker v-model="monthValue" type="month" placeholder="按上传月份搜索"></el-date-picker>
-      <el-input
+      <!-- <el-input
         v-model.trim="fullNameValue"
         placeholder="按姓名搜索"
         style="width: 200px;"
         @keyup.enter.native="handleSearch(1)"
-      />
+      />-->
       <el-button type="primary" @click.native="handleSearch(1)">搜索</el-button>
       <el-button type="primary" @click.native="resetFilter">重置</el-button>
     </div>

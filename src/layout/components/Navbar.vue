@@ -125,7 +125,7 @@ export default {
     }
     &:hover {
       .icon-svg {
-        fill: #ffab2b;
+        fill: #4d7cfe;
       }
     }
   }

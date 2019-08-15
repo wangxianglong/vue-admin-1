@@ -114,10 +114,21 @@ export const constantRoutes = [{
       },
       {
         path: 'afterTax',
-        component: () => import('@/views/pay/afterTax/index'),
-        meta: {
-          title: '税后支付明细'
-        }
+        component: () => import('@/views/pay/afterTax/index/index'),
+        children: [{
+          path: '/afterTax',
+          component: () => import('@/views/pay/afterTax/afterTax/index'),
+          meta: {
+            title: '税后支付明细'
+          },
+        }, {
+          path: '/afterTax/check/:id',
+          component: () => import('@/views/pay/afterTax/check/index'),
+          meta: {
+            title: '税后支付明细复核'
+          },
+          hidden: true
+        }]
       }
     ]
   },
