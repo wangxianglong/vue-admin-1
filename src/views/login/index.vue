@@ -19,30 +19,28 @@
             {{loginType === "message" ? '账号密码登录' : '手机快捷登录'}}
             <svg-icon icon-class="arrow" />
           </div>
-          <el-form-item prop="username" class="mobile-form">
+          <el-form-item prop="mobile" class="mobile-form">
             <span class="svg-container">
               <svg-icon icon-class="mobile" class="input-icon" />
             </span>
             <el-input
               ref="SMSUsername"
-              v-model="loginBySMSForm.username"
+              v-model="loginBySMSForm.mobile"
               placeholder="请输入用户手机号"
               name="SMSUsername"
               type="text"
-              onKeyUp="this.value=this.value.replace(/[^\d]/g,'')"
               clearable
             />
           </el-form-item>
-          <el-form-item prop="passwordNote" class="text-form">
+          <el-form-item prop="code" class="text-form">
             <span class="svg-container">
               <svg-icon icon-class="password" class="input-icon" />
             </span>
             <el-input
               ref="passwordNote"
-              v-model="loginBySMSForm.passwordNote"
+              v-model="loginBySMSForm.code"
               placeholder="请输入短信验证码"
-              name="passwordNote"
-              onKeyUp="this.value=this.value.replace(/[^\d]/g,'')"
+              name="code"
               clearable
             />
             <span class="show-pwd" @click="getSMS">
@@ -77,17 +75,16 @@
             <svg-icon icon-class="arrow" />
           </div>
 
-          <el-form-item prop="username" class="mobile-form">
+          <el-form-item prop="mobile" class="mobile-form">
             <span class="svg-container icon">
               <svg-icon icon-class="mobile" class="input-icon" />
             </span>
             <el-input
               ref="passwordUsername"
-              v-model="loginByPasswordForm.username"
+              v-model="loginByPasswordForm.mobile"
               placeholder="请输入手机号"
               name="passwordUsername"
               type="text"
-              onKeyUp="this.value=this.value.replace(/[^\d]/g,'')"
               clearable
             />
           </el-form-item>
@@ -114,7 +111,6 @@
               placeholder="请输入验证码"
               type="text"
               v-model="loginByPasswordForm.verifycode"
-              onKeyUp="this.value=this.value.replace(/[^\w]/g,'')"
               clearable
             ></el-input>
             <span id="verifyCode" class="show-verifyCode" @click="changeVerifyCode"></span>
@@ -143,34 +139,34 @@ import {
   validateVerifycode
 } from "@/utils/validate";
 import { gVerify } from "@/api/gVerify";
+import { Toast, Message } from "element-ui";
 import url from "@/api/api.js";
 import axios from "axios";
+import { getCode } from "@/api/user";
+
+import { mapMutations, mapActions } from "vuex";
 
 export default {
   name: "Login",
   data() {
     return {
       loginBySMSForm: {
-        username: "15716597991",
-        passwordNote: ""
+        mobile: "15716597991",
+        code: "111111"
       },
       loginByPasswordForm: {
-        username: "15716597991",
+        mobile: "15716597991",
         password: "",
         verifycode: ""
       },
       loginBySMSRules: {
-        username: [
-          { required: true, trigger: "blur", validator: validatePhone }
-        ],
-        passwordNote: [
+        mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
+        code: [
           { required: true, trigger: "blur", validator: validatePasswordNote }
         ]
       },
       loginByPasswordRules: {
-        username: [
-          { required: true, trigger: "blur", validator: validatePhone }
-        ],
+        mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
         password: [
           { required: true, trigger: "blur", validator: validatePassword }
         ],
@@ -194,50 +190,34 @@ export default {
       if (this.loginType === "message") {
         this.$refs["loginBySMS"].validate(valid => {
           if (valid) {
-            this.$axios
-              .get(url.userCodeLogin, {
-                params: {
-                  mobile: this.loginBySMSForm.username,
-                  code: this.loginBySMSForm.passwordNote
-                }
-              })
+            this.$store
+              .dispatch("user/LoginByMessage", this.loginBySMSForm)
               .then(res => {
+                console.log(res);
                 this.login();
-              })
-              .catch(error => {
-                console.log(error);
               });
-          } else {
-            console.log("error submit!!");
-            return false;
           }
         });
       } else {
-        this.login();
         this.$refs["loginByPassword"].validate(valid => {
           if (valid) {
-            var password = this.loginByPasswordForm.password;
-            this.loginByPasswordForm.password = "";
             if (
               this.verifyCode.codeValidate(this.loginByPasswordForm.verifycode)
             ) {
-              this.$axios
-                .post(url.userLogin, {
-                  mobile: this.loginByPasswordForm.username,
-                  pswd: password
+              this.$store
+                .dispatch("user/LoginByPswd", {
+                  usuMobile: this.loginByPasswordForm.mobile,
+                  usuPswd: this.loginByPasswordForm.password
                 })
                 .then(res => {
-                  console.log(res);
                   this.login();
-                })
-                .catch(error => {});
+                });
             } else {
               this.$message("请输入正确的验证码");
               this.loginByPasswordForm.password = "";
               return false;
             }
           } else {
-            console.log("error submit!!");
             return false;
           }
         });
@@ -245,22 +225,15 @@ export default {
     },
     login() {
       this.loading = true;
-      this.$store
-        .dispatch("user/login", this.loginByPasswordForm)
-        .then(() => {
-          this.$router.push(this.redirect || "/");
-          this.loading = false;
-        })
-        .catch(() => {
-          this.loading = false;
-        });
+      this.$router.push(this.redirect || "/");
+      this.loading = false;
     },
     changeLoginType() {
       this.loginType = this.loginType === "message" ? "password" : "message";
       this.verifyCode.refresh();
     },
     getSMS() {
-      if (/^1[3456789]\d{9}$/.test(this.loginBySMSForm.username)) {
+      if (/^1[3456789]\d{9}$/.test(this.loginBySMSForm.mobile)) {
         if (this.messageTime > 0) return;
         this.messageTime = 60;
         this.timer = setInterval(() => {
@@ -270,23 +243,14 @@ export default {
             this.messageTime = 0;
           }
         }, 1000);
-        this.$axios
-          .get(url.userGetCode, {
-            params: {
-              mobile: this.loginBySMSForm.username
-            }
-          })
-          .then(res => {
-            if (res.status == 200) {
-              console.log(res);
-              // if(res.data.result == 200){
-              // }else{
-              //   this.messageTime = 0;
-              //   this.$alert(res.data.msg)
-              // }
-            }
-          })
-          .catch(error => {});
+        getCode(this.loginBySMSForm.mobile).then(res => {
+          Message(
+            `已向您尾号${this.loginBySMSForm.mobile.substring(
+              7,
+              11
+            )}的手机发送验证码`
+          );
+        });
       }
     },
     changeVerifyCode() {
