@@ -6,14 +6,14 @@
         placeholder="按姓名搜索"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="handleFilter(1)"
+        @keyup.enter.native="handleFilter()"
       />
       <el-input
-        v-model="searchValue.byPhone"
+        v-model="searchValue.byMobile"
         placeholder="按手机号码搜索"
         style="width: 200px;"
         class="filter-item"
-        @keyup.enter.native="handleFilter(1)"
+        @keyup.enter.native="handleFilter()"
       />
       <el-select v-model="searchValue.byIdentity" placeholder="按角色搜索">
         <el-option
@@ -26,7 +26,7 @@
       <el-button
         class="filter-item"
         type="primary"
-        @click.native="handleFilter(1)"
+        @click.native="handleFilter()"
         style="margin-left: 23px"
       >搜索</el-button>
       <el-button
@@ -50,37 +50,37 @@
       :header-cell-style="{background:'#E1E1E1'}"
     >
       <!-- <el-table-column prop="customerId" label="序号"></el-table-column> -->
-      <el-table-column prop="fullName" label="姓名"></el-table-column>
-      <el-table-column prop="mobile" label="手机号码"></el-table-column>
-      <el-table-column prop="eMail" label="邮箱"></el-table-column>
-      <el-table-column prop="customerSysUserInfos.roles" label="角色"></el-table-column>
-      <el-table-column prop="customerSysUserInfos.isForbidden" label="状态">
+      <el-table-column prop="usuFullName" label="姓名"></el-table-column>
+      <el-table-column prop="usuMobile" label="手机号码"></el-table-column>
+      <el-table-column prop="usuEMail" label="邮箱"></el-table-column>
+      <el-table-column prop="suIsSupAdmin" label="角色"></el-table-column>
+      <el-table-column prop="suStatus" label="状态">
         <template slot-scope="scope">
           <el-button
-            v-if="scope.row.customerSysUserInfos.isForbidden === 0"
+            v-if="scope.row.suStatus === 0"
             @click.native.prevent="stateChange(scope.row)"
             size="mini"
             type="primary"
           >正常</el-button>
           <el-button
-            v-if="scope.row.customerSysUserInfos.isForbidden === 1"
+            v-if="scope.row.suStatus === 1"
             @click.native.prevent="stateChange(scope.row)"
             size="mini"
             type="danger"
           >禁用</el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="customerSysUserInfos.createTime" label="创建时间" width="180px">
+      <el-table-column prop="suCtime" label="创建时间" width="180px">
         <template slot-scope="scope">
-          <p>{{scope.row.customerSysUserInfos.createTime | renderTime}}</p>
+          <p>{{scope.row.suCtime | renderTime}}</p>
         </template>
       </el-table-column>
-      <el-table-column prop="customerSysUserInfos.lastOperateTime" label="最后操作时间" width="180px">
+      <el-table-column prop="suLtime" label="最后操作时间" width="180px">
         <template slot-scope="scope">
-          <p>{{scope.row.customerSysUserInfos.lastOperateTime | renderTime}}</p>
+          <p>{{scope.row.suLtime | renderTime}}</p>
         </template>
       </el-table-column>
-      <el-table-column prop="pswd" label="登录密码"></el-table-column>
+      <!-- <el-table-column prop="usuPswd" label="登录密码" width="180px"></el-table-column> -->
       <el-table-column width="180" label="操作">
         <template slot-scope="scope">
           <el-button
@@ -94,8 +94,8 @@
     <el-pagination
       layout="sizes,prev, pager, next"
       :total="total"
-      :page-sizes="[10, 20, 50, 100]"
-      :page-size="10"
+      :page-sizes="[1,10, 20, 50, 100]"
+      :page-size="1"
       @size-change="handleSizeChange"
       :current-page.sync="currentPage"
       @current-change="currentChange"
@@ -104,21 +104,22 @@
     <el-dialog
       :title="isAdd?'添加信息':'修改信息'"
       :visible.sync="dialogFormVisible"
-      :before-close="cancel"
       v-dialogDrag
+      :before-close="cancel"
+      :close-on-click-modal="false"
     >
       <el-form :model="editData" :rules="rules" ref="editData">
-        <el-form-item label="姓名" prop="fullName">
-          <el-input v-model="editData.fullName"></el-input>
+        <el-form-item label="姓名" prop="usuFullName">
+          <el-input v-model="editData.usuFullName"></el-input>
         </el-form-item>
-        <el-form-item label="手机号码" prop="mobile">
-          <el-input v-model="editData.mobile"></el-input>
+        <el-form-item label="手机号码" prop="usuMobile">
+          <el-input v-model="editData.usuMobile"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" prop="eMail">
-          <el-input v-model="editData.eMail"></el-input>
+        <el-form-item label="邮箱" prop="usuEMail">
+          <el-input v-model="editData.usuEMail"></el-input>
         </el-form-item>
-        <el-form-item label="角色" prop="customerSysUserInfos.roles" class="form-identity">
-          <el-select v-model="value" placeholder="请选择">
+        <el-form-item label="角色" prop="suIsSupAdmin" class="form-identity">
+          <el-select v-model="editData.suIsSupAdmin" placeholder="请选择">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -127,8 +128,8 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="登录密码" prop="pswd">
-          <el-input v-model="editData.pswd"></el-input>
+        <el-form-item label="登录密码" prop="usuPswd" v-if="isAdd">
+          <el-input v-model="editData.usuPswd"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -142,12 +143,10 @@
 <script>
 import {
   validatePhone,
-  validateMail,
+  validatusuEMail,
   validatePassword
 } from "@/utils/validate";
-import { getList } from "@/api/table";
-import { dateToString } from "@/utils/date";
-import url from "@/api/api.js";
+import { getUserLists, addUser, updateUser, updateStatus } from "@/api/user";
 
 export default {
   data() {
@@ -156,83 +155,80 @@ export default {
       dialogFormVisible: false,
       editRowIndex: -1,
       editData: {
-        customerId: "",
-        fullName: "12344",
-        mobile: "15757116573",
-        eMail: "cmy@qq.com",
-        pswd: "123456",
-        customerSysUserInfos: {
-          roles: "",
-          createTime: "",
-          lastOperateTime: ""
-        }
+        usuFullName: "12344",
+        usuMobile: "15757116573",
+        usuEMail: "cmy@qq.com",
+        usuPswd: "123456",
+        suIsSupAdmin: 0
       },
       searchValue: {
         byName: "",
-        byPhone: "",
+        byMobile: "",
         byIdentity: ""
       },
       options: [
         {
-          value: "管理员",
+          value: 0,
           label: "管理员"
         },
         {
-          value: "普通用户",
+          value: 1,
           label: "普通用户"
         }
       ],
-      value: 0,
       rules: {
-        fullName: [
+        usuFullName: [
           { required: true, message: "姓名不能为空", trigger: "blur" },
           { min: 2, max: 5, message: "长度在 2 到 5 个字符", trigger: "blur" }
         ],
-        mobile: [{ required: true, trigger: "blur", validator: validatePhone }],
-        eMail: [{ required: true, trigger: "blur", validator: validateMail }],
-        pswd: [{ required: true, trigger: "blur", validator: validatePassword }]
+        usuMobile: [
+          { required: true, trigger: "blur", validator: validatePhone }
+        ],
+        usuEMail: [
+          { required: true, trigger: "blur", validator: validatusuEMail }
+        ],
+        usuPswd: [
+          { required: true, trigger: "blur", validator: validatePassword }
+        ]
       },
-      isFilter: false,
       isAdd: false,
       total: 0,
       pageNum: 1,
-      pageSize: 10,
+      pageSize: 1,
       currentPage: 1,
       loading: true,
-      customerId: 1
+      cId: 1
     };
   },
   mounted() {
+    if (this.$route.query.pageNum) {
+      this.pageNum = parseInt(this.$route.query.pageNum);
+    }
+    if (this.$route.query.pageSize) {
+      this.pageSize = parseInt(this.$route.query.pageSize);
+    }
+    console.log(this.pageNum);
     this.getUserLists();
   },
   methods: {
     //获取数据列表
     getUserLists() {
       this.loading = true;
-      this.$axios
-        .get(url.userLists, {
-          params: {
-            customerId: this.customerId,
-            pageNum: this.pageNum,
-            pageSize: this.pageSize
-          }
-        })
+      getUserLists({
+        pageNum: this.pageNum,
+        pageSize: this.pageSize,
+        cId: this.cId,
+        usuMobile: this.searchValue.byMobile,
+        usuFullName: this.searchValue.byName,
+        suIsSupAdmin: this.searchValue.byIdentity
+      })
         .then(res => {
-          console.log(res);
-          if (res.status === 200) {
-            if (res.data.result === 1) {
-              this.tableData = res.data.data.list;
-              this.total = res.data.data.total;
-            } else {
-              this.$message.error(res.data.msg);
-            }
-          } else {
-            this.$message.error("获取数据出错！");
-          }
+          this.tableData = res.data.list;
+          this.total = res.data.total;
+          this.currentPage = this.pageNum;
           this.loading = false;
         })
         .catch(error => {
-          this.$message.error("获取数据出错！");
           this.loading = false;
         });
     },
@@ -244,26 +240,14 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.$axios
-            .post(url.userForbidden, {
-              customerId: this.customerId,
-              isForbidden: 1 - row.customerSysUserInfos.isForbidden,
-              mobile: row.mobile
-            })
-            .then(res => {
-              console.log(res);
-              if (res.status === 200) {
-                if (res.data.result === 1) {
-                  this.$message.success("修改成功!");
-                  row.customerSysUserInfos.isForbidden =
-                    1 - row.customerSysUserInfos.isForbidden;
-                } else {
-                  this.$message.error(res.data.msg);
-                }
-              } else {
-                this.$message.error("修改失败");
-              }
-            });
+          updateStatus({
+            cId: this.cId,
+            suStatus: 1 - row.suStatus,
+            usuMobile: row.usuMobile
+          }).then(res => {
+            this.$message.success("修改成功!");
+            row.suStatus = 1 - row.suStatus;
+          });
         })
         .catch(() => {
           this.$message({
@@ -276,40 +260,19 @@ export default {
     editUserData(row, index) {
       this.editRowIndex = index;
       this.editData = JSON.parse(JSON.stringify(row));
-      this.value = row.customerSysUserInfos.roles;
       this.dialogFormVisible = true;
     },
     //编辑用户确认
     editUserDataTrue() {
       this.$refs["editData"].validate(valid => {
         if (valid) {
-          this.$axios
-            .post(url.userEdit, {
-              mobile: this.editData.mobile,
-              customerId: this.customerId,
-              fullName: this.editData.fullName,
-              eMail: this.editData.eMail,
-              roles: this.editData.customerSysUserInfos.roles
-            })
-            .then(res => {
-              console.log(res);
-              if (res.status === 200) {
-                if (res.data.result === 1) {
-                  this.$message.success("编辑成功");
-                  this.tableData[this.editRowIndex] = JSON.parse(
-                    JSON.stringify(this.editData)
-                  );
-                  this.tableData[
-                    this.editRowIndex
-                  ].customerSysUserInfos.roles = this.value;
-                } else {
-                  this.$message.error(res.data.msg);
-                }
-              } else {
-                this.$message.error("编辑失败");
-              }
-              this.cancel();
-            });
+          updateUser(this.editData).then(res => {
+            this.$message.success("修改成功");
+            this.tableData[this.editRowIndex] = JSON.parse(
+              JSON.stringify(this.editData)
+            );
+          });
+          this.cancel();
         }
       });
     },
@@ -319,126 +282,57 @@ export default {
       for (let key in this.editData) {
         this.editData[key] = "";
       }
-      this.value = -1;
       this.$refs["editData"].clearValidate();
+      this.isAdd = false;
     },
     //模糊字段查询
-    handleFilter(pageNum) {
-      if (
-        this.searchValue.byName === "" &&
-        this.searchValue.byPhone === "" &&
-        this.searchValue.byIdentity === ""
-      ) {
-        this.getUserLists();
-        this.isFilter = false;
-        return;
-      }
-      this.loading = true;
-      this.$axios
-        .get(url.userLists, {
-          params: {
-            mobile: this.searchValue.byPhone,
-            fullName: this.searchValue.byName,
-            roles: this.searchValue.byIdentity,
-            customerId: this.customerId,
-            pageNum: pageNum,
-            pageSize: this.pageSize
-          }
-        })
-        .then(res => {
-          console.log(res);
-          if (res.status === 200) {
-            if (res.data.result === 1) {
-              this.isFilter = true;
-              if (pageNum === 1) {
-                this.pageNum = 1;
-                this.currentPage = 1;
-              }
-              this.tableData = res.data.data.list;
-              this.total = res.data.data.total;
-            } else {
-              this.$message.error(res.data.msg);
-            }
-          } else {
-            this.$message.error("查询出错！");
-          }
-          this.loading = false;
-        })
-        .catch(error => {
-          this.$message.error("查询出错！");
-          this.loading = false;
-        });
+    handleFilter() {
+      this.pageNum = 1;
+      this.getUserLists();
     },
     //重置查询
     resetFilter() {
-      this.isFilter = false;
-      this.currentPage = 1;
+      for (key in this.searchValue) {
+        this.searchValue[key] = "";
+      }
       this.pageNum = 1;
       this.getUserLists();
-      this.searchValue.byName = "";
-      this.searchValue.byPhone = "";
-      this.searchValue.byIdentity = "";
     },
     //添加用户
     addUserData() {
       this.isAdd = true;
       this.dialogFormVisible = true;
-      this.value = "管理员";
     },
     //确定添加用户
     addUserDataTrue(editData) {
       this.$refs["editData"].validate(valid => {
         if (valid) {
           let newData = this.editData;
-          delete newData["customerSysUserInfos"];
-          newData.roles = this.value;
-          newData.customerId = this.customerId;
-          this.$axios
-            .post(url.userAdd, newData)
-            .then(res => {
-              if (res.status === 200) {
-                if (res.data.result === 1) {
-                  console.log(res);
-                  this.$message.success("添加成功");
-                  if (this.isFilter) {
-                    this.handleFilter(this.pageNum);
-                  } else {
-                    this.getUserLists();
-                  }
-                } else {
-                  this.$message.error(res.data.msg);
-                }
-              } else {
-                this.$message.error("添加失败");
-              }
-            })
-            .catch(error => {
-              this.$message.error("添加失败");
-            });
-          this.dialogFormVisible = false;
-          this.isAdd = false;
+          newData.cId = this.cId;
+          addUser(newData).then(res => {
+            this.$message.success("添加成功");
+            this.getUserLists();
+          });
+          this.cancel();
         }
       });
     },
     //换页
     currentChange(currentPage) {
       this.pageNum = currentPage;
-      if (this.isFilter) {
-        this.handleFilter(this.pageNum);
-      } else {
-        this.getUserLists();
-      }
+      this.$router.replace({
+        path: "/table",
+        query: { pageNum: this.pageNum, pageSize: this.pageSize }
+      });
     },
     //改变每页数据量
     handleSizeChange(size) {
       this.pageSize = size;
       this.pageNum = 1;
-      this.currentPage = 1;
-      if (this.isFilter) {
-        this.handleFilter(this.pageNum);
-      } else {
-        this.getUserLists();
-      }
+      this.$router.replace({
+        path: "/table",
+        query: { pageNum: this.pageNum, pageSize: this.pageSize }
+      });
     }
   },
   filters: {
@@ -448,6 +342,15 @@ export default {
         .toISOString()
         .replace(/T/g, " ")
         .replace(/\.[\d]{3}Z/, "");
+    }
+  },
+  watch: {
+    // 监听路由变化，随时获取新的列表信息
+    $route: {
+      handler: function(route) {
+        this.getUserLists();
+      },
+      immediate: true
     }
   }
 };

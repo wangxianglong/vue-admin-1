@@ -61,11 +61,38 @@ export function forgetPswd(data) {
   })
 }
 
-
+//查询B端职员
 export function getUserLists(params) {
   return request({
     url: '/user/findUser',
     method: 'get',
     params
+  })
+}
+
+//添加新用户
+export function addUser(data) {
+  return request({
+    url: '/user',
+    method: 'post',
+    data
+  })
+}
+
+//修改用户状态
+export function updateStatus(data) {
+  return request({
+    url: '/user/updateStatus',
+    method: 'post',
+    data
+  })
+}
+
+//编辑用户
+export function updateUser(data) {
+  return request({
+    url: '/user/update',
+    method: 'post',
+    data
   })
 }

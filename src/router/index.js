@@ -60,7 +60,7 @@ export const constantRoutes = [{
     path: '/table',
     component: Layout,
     children: [{
-      path: 'index',
+      path: '',
       name: 'Table',
       component: () => import('@/views/table/index'),
       meta: {
@@ -73,7 +73,7 @@ export const constantRoutes = [{
     path: '/roster',
     component: Layout,
     children: [{
-      path: 'index',
+      path: '',
       name: 'Roster',
       component: () => import('@/views/roster/index'),
       meta: {
